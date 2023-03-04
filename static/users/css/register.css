@@ -1,6 +1,6 @@
 .gradient-custom {
 	/* fallback for old browsers */
-	background: #f093fb;
+	background: #2657e8 ;
 	
 	/* Chrome 10-25, Safari 5.1-6 */
 	background: -webkit-linear-gradient(to bottom right, rgb(38,87,232,1), rgb(255, 255, 255));
@@ -19,7 +19,7 @@
 	top: 13px;
 	}
 
-	input[type="date"] {
-		width: 200px;
+	input[type="Address"] {
+		width: 650px;
 	}
 	

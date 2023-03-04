@@ -10,6 +10,8 @@ class User(AbstractUser):
         ELDER = "ELDER", "Elder"
         RELATED = "ELDER_RELATED", "Elder_related"
         SOCIAL_WORKER = "SOCIAL_WORKER", "Social_worker"
+    
+    base_type = Types.SOCIAL_WORKER
 
     type = models.CharField(_("Type"), 
                             max_length=50, 
@@ -17,6 +19,11 @@ class User(AbstractUser):
                             default=Types.ELDER)
 
     name = models.CharField(_("Name of User"), blank=True, max_length=255)
+    
+    def save(self, *arg, **kwargs):
+        if not self.pk:   
+            self.type = self.base_type
+            return super().save(*arg, **kwargs)
     
     def get_absolute_url(self):
         return reverse("users:detail", kwargs={"username:": self.username})
