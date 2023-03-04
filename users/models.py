@@ -20,10 +20,10 @@ class User(AbstractUser):
 
     name = models.CharField(_("Name of User"), blank=True, max_length=255)
     
-    def save(self, *arg, **kwargs):
+    def save(self, *args, **kwargs):
         if not self.pk:   
             self.type = self.base_type
-            return super().save(*arg, **kwargs)
+            return super().save(*args, **kwargs)
     
     def get_absolute_url(self):
         return reverse("users:detail", kwargs={"username:": self.username})
