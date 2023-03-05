@@ -7,16 +7,17 @@ from django.utils.translation import gettext_lazy as _
 class User(AbstractUser):
     
     class Types(models.TextChoices):
+        ADMIN = "ADMIN", "Admin"
         ELDER = "ELDER", "Elder"
         RELATED = "ELDER_RELATED", "Elder_related"
         SOCIAL_WORKER = "SOCIAL_WORKER", "Social_worker"
     
-    base_type = Types.SOCIAL_WORKER
+    base_type = Types.ADMIN
 
     type = models.CharField(_("Type"), 
                             max_length=50, 
                             choices=Types.choices,
-                            default=Types.ELDER)
+                            default=Types.ADMIN)
 
     name = models.CharField(_("Name of User"), blank=True, max_length=255)
     
@@ -42,6 +43,7 @@ class Socail_workerManager(models.Manager):
 
 
 class Elder(User):
+    base_type = User.Types.ELDER
     objects = ElderManager()
 
     class Meta:
