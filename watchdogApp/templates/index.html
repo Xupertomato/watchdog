@@ -13,7 +13,7 @@
 <link rel="stylesheet" type="text/css" href="{% static 'watchdogApp/css/index.css' %}">
 
 </head>
-<body>
+<body style="margin: 20px;">
 <!-- partial:index.partial.html -->
 <div class="pt-5">
   <h1 class="text-center">歡迎使用 Watchdog</h1>
@@ -45,7 +45,7 @@
                             </form>
                             <p class="small-xl pt-3 text-center">
                                 <span class="text-muted">還沒註冊會員?</span>
-                                <a href="{% url 'users:register' %}">註冊</a>
+                                <a href="{% url 'users:register_base' %}">註冊</a>
                             </p>
                         </div>
                     </div>

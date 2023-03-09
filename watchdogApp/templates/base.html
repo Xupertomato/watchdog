@@ -1,13 +1,14 @@
 <p>
-    <a href="{% url 'watchdogApp:index' %}">Home</a>
+  
+    <a href="{% url 'watchdogApp:index' %}" style="color: black;margin-left:10px;"">首頁</a>
  
       {% if user.is_authenticated %}
         Hello, {{ user.username }}.
-        <a href="{% url 'users:logout' %}">Log out</a>
+        <a href="{% url 'users:logout' %}" style="color: black;">登出</a>
       {% else %}
-        <a href="{% url 'users:register' %}">Register</a>
-        <a href="{% url 'users:login' %}">Log in</a> 
+        <a href="{% url 'users:register_base' %}" style="color: black;">註冊</a>
+        <a href="{% url 'users:login' %}" style="color: black; float: right; margin-right:10px;">登入</a> 
       {% endif %}
-    </p>
+</p>
     
     {% block content %}{% endblock %}

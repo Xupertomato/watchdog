@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+<link rel="stylesheet" href="{% static 'users/css/register.css' %}">
+<section class="vh-100 gradient-custom">
+<div class="container py-5 h-100">
+    <div class="row justify-content-center align-items-center h-100">
+      <div class="col-12 col-lg-9 col-xl-7">
+        <div class="card shadow-2-strong card-registration" style="border-radius: 15px;">
+          <div class="card-body p-4 p-md-5">
+            <center><h1 class="mb-4 pb-2 pb-md-0 mb-md-5">請選擇註冊身份</h1></center>
+                <div class="d-flex justify-content-center">
+                    <div class="row text-center">
+                        <a href="{% url 'users:register_elder' %}" class="btn btn-primary rounded-pill mx-1" style="width:160px;height:80px;font-size:20px;">長者</a>
+                        <a href="{% url 'users:register_related' %}" class="btn btn-primary rounded-pill mx-1" style="width:160px;height:80px;font-size:20px;">長者家屬</a>
+                        <a href="{% url 'users:register_manager' %}" class="btn btn-primary rounded-pill mx-1" style="width:160px;height:80px;font-size:20px;">管理員</a>
+                    </div>
+                </div>
+        </div>
+        </div>
+    </div>
+    </div>
+</div>
+</section>
+
+    
+  
+{% endblock content %}
