@@ -19,10 +19,12 @@
 	top: 13px;
 	}
 
+	input[type="tel"] {
+		width: 650px;
+	}
+
 	input[type="Address"] {
 		width: 650px;
 	}
-	input[type="phoneNumber"] {
-		width: 650px;
-	}
+	
 	
