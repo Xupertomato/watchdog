@@ -1,10 +1,11 @@
 from django.urls import path
-from admin_datta import views
 from django.contrib.auth import views as auth_views
-
+from . import views
+from .views import *
 
 urlpatterns = [
   path('', views.index, name='index'),
+  
 
   # Components
   path('components/button/', views.bc_button, name='bc_button'),
@@ -16,7 +17,7 @@ urlpatterns = [
   path('components/feather-icon/', views.icon_feather, name='icon_feather'),
 
   # Forms and Tables
-  path('forms/form-elements/', views.form_elements, name='form_elements'),
+  path('forms/upload_elder_record/', views.upload_elder_record, name='add_record'),
   path('tables/basic-tables/', views.basic_tables, name='basic_tables'),
 
   # Chart and Maps
@@ -25,6 +26,7 @@ urlpatterns = [
 
   # Authentication
   path('accounts/register/', views.UserRegistrationView.as_view(), name='register'),
+  path('accounts/elder-register/', views.ElderRegistrationView.as_view(), name='elder_register'),
   path('accounts/login/', views.UserLoginView.as_view(), name='login'),
   path('accounts/logout/', views.logout_view, name='logout'),
 
@@ -46,5 +48,5 @@ urlpatterns = [
 
   #
   path('profile/', views.profile, name='profile'),
-  path('sample-page/', views.sample_page, name='sample_page'),
+  
 ]

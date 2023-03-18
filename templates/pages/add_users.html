@@ -8,34 +8,50 @@
     <div class="col-sm-12">
       <div class="card">
         <div class="card-header">
-          <h5>Basic Componant</h5>
+          <h5>新增長者</h5>
         </div>
         <div class="card-body">
-          <h5>Form controls</h5>
-          <hr>
           <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-12">
               <form>
                 <div class="form-group">
-                  <label for="exampleInputEmail1">Email address</label>
-                  <input type="email" class="form-control" id="exampleInputEmail1"
-                    aria-describedby="emailHelp" placeholder="Enter email">
-                  <small id="emailHelp" class="form-text text-muted">We'll never share your email with
-                    anyone else.</small>
+                  <label>身分證字號</label>
+                  <input type="text" class="form-control" placeholder="請輸入身分證字號">
                 </div>
                 <div class="form-group">
-                  <label for="exampleInputPassword1">Password</label>
+                  <label>姓名</label>
+                  <input type="text" class="form-control" placeholder="請輸入長者姓名">
+                </div>
+                <div class="form-group">
+                  <label for="sexSelect">性別</label>
+                  <select class="form-control" id="sexSelect">
+                    <option>男</option>
+                    <option>女</option>
+                    <option>其他</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>生日</label>
+                  <input type="date" class="form-control" >
+                </div>
+                <div class="form-group">
+                  <label>電話號碼</label>
+                  <input type="tel" class="form-control" placeholder="請輸入電話號碼">
+                </div>
+                <div class="form-group">
+                  <label for="Address">住址</label>
+                  <input type="text" class="form-control" id="address" placeholder="請輸入住址">
+                </div>
+                <div class="form-group">
+                  <label for="exampleInputPassword1">密碼</label>
                   <input type="password" class="form-control" id="exampleInputPassword1"
-                    placeholder="Password">
+                    placeholder="請輸入密碼">
                 </div>
-                <div class="form-group form-check">
-                  <input type="checkbox" class="form-check-input" id="exampleCheck1">
-                  <label class="form-check-label" for="exampleCheck1">Check me out</label>
-                </div>
-                <button type="submit" class="btn btn-primary">Submit</button>
+            
+                <button type="submit" class="btn btn-primary">送出</button>
               </form>
             </div>
-            <div class="col-md-6">
+            <!-- <div class="col-md-6">
               <form>
                 <div class="form-group">
                   <label>Text</label>
@@ -136,9 +152,9 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
       <!-- Input group -->
-      <div class="card">
+      <!-- <div class="card">
         <div class="card-header">
           <h5>Input Group</h5>
         </div>
@@ -307,7 +323,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </div> -->
   <!-- [ Main Content ] end -->
 
 {% endblock content %}

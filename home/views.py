@@ -1,10 +1,13 @@
 from django.shortcuts import render, redirect
-from admin_datta.forms import RegistrationForm, LoginForm, UserPasswordChangeForm, UserPasswordResetForm, UserSetPasswordForm
+from .forms import RegistrationForm, LoginForm, UserPasswordChangeForm, UserPasswordResetForm, UserSetPasswordForm
 from django.contrib.auth.views import LoginView, PasswordChangeView, PasswordResetConfirmView, PasswordResetView
 from django.views.generic import CreateView
 from django.contrib.auth import logout
-
-from django.contrib.auth.decorators import login_required
+from .models import *
+from django.contrib.auth.decorators import login_required,permission_required
+from django.contrib.auth.mixins import PermissionRequiredMixin
+from .forms import *
+from django.views.generic.edit import CreateView
 
 def index(request):
   context = {
@@ -72,12 +75,12 @@ def icon_feather(request):
 
 # Forms and Tables
 @login_required(login_url='/accounts/login/')
-def form_elements(request):
+def add_users(request):
   context = {
     'parent': 'form_components',
-    'segment': 'form_elements'
+    'segment': 'add_users'
   }
-  return render(request, 'pages/form_elements.html', context)
+  return render(request, 'pages/add_users.html', context)
 
 @login_required(login_url='/accounts/login/')
 def basic_tables(request):
@@ -104,11 +107,32 @@ def google_maps(request):
   }
   return render(request, 'pages/map-google.html', context)
 
+# #Permissions
+# class AdminManagerPermission(PermissionRequiredMixin):
+#     def has_permission(self):
+#         user = self.request.user
+#         if user.is_authenticated and user.type in ['ADMIN', 'MANAGER']:
+#             return True
+#         return False
+      
 # Authentication
 class UserRegistrationView(CreateView):
   template_name = 'accounts/auth-signup.html'
   form_class = RegistrationForm
   success_url = '/accounts/login/'
+
+class ElderRegistrationView(PermissionRequiredMixin, CreateView):
+    template_name = 'accounts/elder-signup.html'
+    form_class = ElderRegistrationForm
+    success_url = '/accounts/login/'
+    permission_required = 'home.can_view_elder_registration'
+
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def has_permission(self):
+        user = self.request.user
+        return super().has_permission() or (user.is_authenticated and user.type == 'MANAGER')
 
 class UserLoginView(LoginView):
   template_name = 'accounts/auth-signin.html'
@@ -136,10 +160,19 @@ def profile(request):
     'segment': 'profile',
   }
   return render(request, 'pages/profile.html', context)
-
+  
 @login_required(login_url='/accounts/login/')
-def sample_page(request):
-  context = {
-    'segment': 'sample_page',
-  }
-  return render(request, 'pages/sample-page.html', context)
+def upload_elder_record(request):
+    if request.method == 'POST':
+        form = ElderRecordForm(request.POST, request.FILES)
+        if form.is_valid():
+            uploader = request.user
+            elder_record, created = ElderRecord.objects.get_or_create(uploader=uploader)
+            elder_record.uploadedFile = form.cleaned_data['uploadedFile']
+            elder_record.user_tag.set(form.cleaned_data['user_tag'])
+            elder_record.save()
+            return redirect('/forms/upload_elder_record/')
+    else:
+        form = ElderRecordForm()
+    users = User.objects.all()
+    return render(request, 'pages/add_record.html', {'form': form, 'current_user': request.user, 'users': users})

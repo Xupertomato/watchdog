@@ -110,26 +110,37 @@
           <div class="dropdown-menu dropdown-menu-right profile-notification">
             <div class="pro-head">
               <img src="{% static 'assets/images/user/avatar-1.jpg' %}" class="img-radius" alt="User-Profile-Image">
-              <span>John Doe</span>
+              
               {% if request.user.is_authenticated %}
+              <span>{{ request.user.name }}</span>
+              {% else %}
+              <span>訪客</span>
+              {% endif %}
+
+              {% if request.user.is_authenticated %}
+                <!-- 原先寫法
                 {% if request.user.is_superuser %}
                 <a href="{% url 'admin:logout' %}" class="dud-logout" title="Logout">
                 {% else %}
                 <a href="{% url 'logout' %}" class="dud-logout" title="Logout">
-                {% endif %}
+                {% endif %} -->
+                <a href="{% url 'logout' %}" class="dud-logout" title="Logout">
                   <i class="feather icon-log-out"></i>
                 </a>
               {% endif %}
             </div>
             <ul class="pro-body">
-              <li><a href="javascript;" class="dropdown-item"><i class="feather icon-settings"></i>
-                  Settings</a></li>
-              <li><a href="javascript;" class="dropdown-item"><i class="feather icon-user"></i>
-                  Profile</a></li>
-              <li><a href="javascript;" class="dropdown-item"><i class="feather icon-mail"></i> My
-                  Messages</a></li>
-              <li><a href="javascript;" class="dropdown-item"><i class="feather icon-lock"></i> Lock
-                  Screen</a></li>
+              <!-- <li><a href="javascript;" class="dropdown-item"><i class="feather icon-settings"></i>
+                  Settings</a></li> -->
+                  
+              {%if request.user.is_authenticated %}
+              <li><a href="{% url 'profile' %}"  class="dropdown-item"><i class="feather icon-user"></i>使用者資料</a></li>
+              {% endif %}
+
+              {% if not request.user.is_authenticated %}             
+              <li><a href="{% url 'login' %}" class="dropdown-item"><i class="feather icon-lock"></i> 登入</a></li>
+              {% endif %}
+
               {% if request.user.is_authenticated %}
               <li>
                 {% if request.user.is_superuser %}
@@ -137,7 +148,7 @@
                 {% else %}
                 <a href="{% url 'password_change' %}" class="dropdown-item">
                 {% endif %}
-                  <i class="feather icon-edit"></i>Change Password
+                  <i class="feather icon-edit"></i>更改密碼
                 </a>
               </li>
               {% endif %}

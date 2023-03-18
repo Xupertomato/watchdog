@@ -19,20 +19,18 @@
                     <div class="mb-12">
                         <i class="feather icon-user-plus auth-icon"></i>
                     </div>
-                    <h3 class="mb-12">管理員註冊帳號</h3>
+                    <h3 class="mb-12">新增照護長者</h3>
                     {% for field in form %}
-                    <div class="form-group">
-                        <!-- {% if field.name == 'sex' and 'type' %}
+                        <div class="form-group">
+                            {% if field.name == 'sex' %}
                                 
                                 {{ field }}
-                        
                             {% else %}
                                 
                                 {{ field }}
-                            {% endif %} -->
-                            {{field}}
-                    </div>
-                    <span class="text-danger d-block text-left">{{ field.errors }}</span>
+                            {% endif %}
+                        </div>
+                        <span class="text-danger d-block text-left">{{ field.errors }}</span>
                     {% endfor %}
                     <div class="form-group text-left mt-4">
                         <div class="checkbox checkbox-fill d-inline">
@@ -47,7 +45,6 @@
                         </div>
                     </div> -->
                     <button type="submit" class="btn btn-primary shadow-2 mb-4">註冊</button>
-                    <p class="mb-0 text-muted">Already have an account? <a href="{% url 'login' %}"> Log in</a></p>
                 </form>
             </div>
         </div>
