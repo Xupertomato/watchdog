@@ -109,11 +109,11 @@
           </a>
           <div class="dropdown-menu dropdown-menu-right profile-notification">
             <div class="pro-head">
-              <img src="{% static 'assets/images/user/avatar-1.jpg' %}" class="img-radius" alt="User-Profile-Image">
-              
               {% if request.user.is_authenticated %}
+              <img src="{{ MEDIA_URL }}Profile/{{ request.user.username }}/{{ request.user.username }}.jpg" alt="{{ request.user.username }} profile picture">         
               <span>{{ request.user.name }}</span>
               {% else %}
+              <img src="{{ MEDIA_URL }}Profile/visitor.jpg" alt="{{ request.user.username }} profile picture">
               <span>訪客</span>
               {% endif %}
 

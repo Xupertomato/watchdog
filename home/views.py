@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required,permission_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from .forms import *
 from django.views.generic.edit import CreateView
+from django.contrib import messages
 
 def index(request):
   context = {
@@ -119,12 +120,12 @@ def google_maps(request):
 class UserRegistrationView(CreateView):
   template_name = 'accounts/auth-signup.html'
   form_class = RegistrationForm
-  success_url = '/accounts/login/'
+  success_url = '/accounts/register/'
 
 class ElderRegistrationView(PermissionRequiredMixin, CreateView):
     template_name = 'accounts/elder-signup.html'
     form_class = ElderRegistrationForm
-    success_url = '/accounts/login/'
+    success_url = '/accounts/elder-register/'
     permission_required = 'home.can_view_elder_registration'
 
     def dispatch(self, request, *args, **kwargs):
@@ -152,14 +153,22 @@ class UserPasswordChangeView(PasswordChangeView):
 
 def logout_view(request):
   logout(request)
-  return redirect('/accounts/login/')
+  return redirect('/')
+
 
 @login_required(login_url='/accounts/login/')
 def profile(request):
-  context = {
-    'segment': 'profile',
-  }
-  return render(request, 'pages/profile.html', context)
+    if request.method == 'POST':
+        form = UserUpdateForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Your account has been updated!')
+            return redirect('profile')
+    else:
+        form = UserUpdateForm(instance=request.user)
+
+    context = {'form': form}
+    return render(request, 'pages/profile.html', context)
   
 @login_required(login_url='/accounts/login/')
 def upload_elder_record(request):

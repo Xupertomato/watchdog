@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block content %}
-
+<link href='https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css' rel='stylesheet'></link>
 <div class="row">
     <div class="col-sm-12">
         <div class="card">
@@ -10,53 +10,50 @@
                 <h5>新增長者</h5>
             </div>> -->
         </div>
-            <div class="col-md-12">
-                <form method="post" class="card-body text-center">
-                    <div class="row">
-                        <div class="col-md-12">
-                    <div class="form-group">
-                    {% csrf_token %}
-                    <div class="mb-12">
-                        <i class="feather icon-user-plus auth-icon"></i>
-                    </div>
-                    <h3 class="mb-12">管理員註冊帳號</h3>
-                    {% for field in form %}
-                    <div class="form-group">
-                        <!-- {% if field.name == 'sex' and 'type' %}
-                                
-                                {{ field }}
-                        
-                            {% else %}
-                                
-                                {{ field }}
-                            {% endif %} -->
-                            {{field}}
-                    </div>
-                    <span class="text-danger d-block text-left">{{ field.errors }}</span>
-                    {% endfor %}
-                    <div class="form-group text-left mt-4">
-                        <div class="checkbox checkbox-fill d-inline">
-                            <input type="checkbox" name="checkbox-fill-1" id="checkbox-fill-1" checked="">
-                            <label for="checkbox-fill-1" class="cr"> Save Details</label>
+        <div class="col-md-12">
+            <form method="post" enctype="multipart/form-data" class="card-body text-center">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            {% csrf_token %}
+                            <div class="mb-12 ">
+                                <i class="feather icon-user-plus auth-icon "></i>
+                            </div>
+                            <h3 class="mb-12 ">新增使用者帳號</h3>
+                            {% for field in form %}
+                                {% if field.name != 'upload_profile' %}
+                                    <div class="form-group">
+                                        {{ field }}
+                                        <span class="text-danger d-block text-left">{{ field.errors }}</span>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                            <div class="form-group text-left">使用者照片：
+                                <label class="btn btn-primary ">
+                                    <input id="upload_profile" style="display:none;" type="file" name="upload_profile">
+                                    <i class="fa fa-photo"></i>選擇照片
+                                </label>
+                                <span class="text-danger d-block text-left">{{ form.upload_profile.errors }}</span>
+                            </div>
+                            <div class="form-group text-left mt-4">
+                                <div class="checkbox checkbox-fill d-inline">
+                                    <input type="checkbox" name="checkbox-fill-1" id="checkbox-fill-1" checked="">
+                                    <label for="checkbox-fill-1" class="cr"> Save Details</label>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary shadow-2 mb-4">註冊</button>
+                            <p class="mb-0 text-muted">Already have an account? <a href="{% url 'login' %}"> Log in</a></p>
                         </div>
                     </div>
-                    <!-- <div class="form-group text-left">
-                        <div class="checkbox checkbox-fill d-inline">
-                            <input type="checkbox" name="checkbox-fill-2" id="checkbox-fill-2">
-                            <label for="checkbox-fill-2" class="cr">Send me the <a href="#!"> Newsletter</a> weekly.</label>
-                        </div>
-                    </div> -->
-                    <button type="submit" class="btn btn-primary shadow-2 mb-4">註冊</button>
-                    <p class="mb-0 text-muted">Already have an account? <a href="{% url 'login' %}"> Log in</a></p>
-                </form>
-            </div>
+                </div>
+            </form>
         </div>
     </div>
+</div>
 
-
-    <label class="d-none">
-        <i class="icon feather icon-sun" id="theme-indicator"></i>
-        <input type="checkbox" id="theme-switch" class="d-none">
-    </label>
+<label class="d-none">
+    <i class="icon feather icon-sun" id="theme-indicator"></i>
+    <input type="checkbox" id="theme-switch" class="d-none">
+</label>
 
 {% endblock content %}

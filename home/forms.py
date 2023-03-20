@@ -18,49 +18,54 @@ class RegistrationForm(UserCreationForm):
     type = forms.ChoiceField(
         choices=[(choice[0], choice[1]) for choice in User.Types.choices if choice[0] != 'ADMIN'],
         widget=forms.Select(attrs={'class': 'form-control', 'placeholder': '身份'}),
-    )
-    
+        )
+       
     class Meta:
         model = User
-        fields = ('username', 'email', "name", "sex", "type", "phone_num", "birthday", "address")
-        
+        fields = ('username', 'name', 'email', 'sex', 'type', 'phone_num', 'birthday', 'address', 'upload_profile')
+            
         widgets = {
-        'username': forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': '身分證字號'
-        }),
-        'email': forms.EmailInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Email'
-        }),
-        'name': forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': '名字'
-        }),
-        'sex': forms.Select(attrs={
+            'username': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': '性別'
-        }),
-        'type': forms.Select(attrs={
+                'placeholder': '身分證字號'
+            }),
+            'email': forms.EmailInput(attrs={
                 'class': 'form-control',
-                'placeholder': '身份'
-        }),
-        'phone_num': forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': '電話'
-        }),
-        'birthday': forms.DateInput(attrs={
-            'type': 'date',
-            'class': 'form-control',
-            'placeholder': '出生日期'
-        }),
-        'address': forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': '地址'
-        })
+                'placeholder': 'Email'
+            }),
+            'name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': '名字'
+            }),
+            'sex': forms.Select(attrs={
+                    'class': 'form-control',
+                    'placeholder': '性別'
+            }),
+            'type': forms.Select(attrs={
+                    'class': 'form-control',
+                    'placeholder': '身份'
+            }),
+            'phone_num': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': '電話'
+            }),
+            'birthday': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'form-control',
+                'placeholder': '出生日期'
+            }),
+            'address': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': '地址'
+            }),
+            'upload_profile': forms.FileInput(attrs={
+                'class': 'form-control',
+                'placeholder': '使用者圖片'
+            })
         }
 
 class ElderRegistrationForm(UserCreationForm):
+
     password1 = forms.CharField(
       label=_("Password"),
       widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': '輸入密碼'}),
@@ -69,10 +74,15 @@ class ElderRegistrationForm(UserCreationForm):
       label=_("Confirm Password"),
       widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': '請再次輸入密碼'}),
   )
-         
+    related_users = forms.ModelMultipleChoiceField(
+        queryset=User.objects.filter(type__in=[User.Types.ADMIN, User.Types.MANAGER]),
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label="Related users"
+    )      
     class Meta:
-        model = User
-        fields = ('username', 'email', "name", "sex", "phone_num", "birthday", "address")
+        model = Elder
+        fields = ('username',  "name", 'email', "sex", "phone_num", "birthday", "address", 'upload_profile', "related_users")
         
         widgets = {
         'username': forms.TextInput(attrs={
@@ -103,8 +113,13 @@ class ElderRegistrationForm(UserCreationForm):
         'address': forms.TextInput(attrs={
             'class': 'form-control',
             'placeholder': '地址'
+        }),
+        'upload_profile': forms.FileInput(attrs={
+                'class': 'form-control',
+                'placeholder': '使用者圖片'
         })
         }
+        
 
 class LoginForm(AuthenticationForm):
   username = UsernameField(label=_("Your Username"), widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "身分證字號"}))
@@ -122,24 +137,60 @@ class UserPasswordResetForm(PasswordResetForm):
 
 class UserSetPasswordForm(SetPasswordForm):
     new_password1 = forms.CharField(max_length=50, widget=forms.PasswordInput(attrs={
-        'class': 'form-control', 'placeholder': 'New Password'
+        'class': 'form-control', 'placeholder': '新密碼'
     }), label="New Password")
     new_password2 = forms.CharField(max_length=50, widget=forms.PasswordInput(attrs={
-        'class': 'form-control', 'placeholder': 'Confirm New Password'
+        'class': 'form-control', 'placeholder': '再次確認新密碼'
     }), label="Confirm New Password")
     
 
 class UserPasswordChangeForm(PasswordChangeForm):
     old_password = forms.CharField(max_length=50, widget=forms.PasswordInput(attrs={
-        'class': 'form-control', 'placeholder': 'Old Password'
+        'class': 'form-control', 'placeholder': '舊密碼'
     }), label='Old Password')
     new_password1 = forms.CharField(max_length=50, widget=forms.PasswordInput(attrs={
-        'class': 'form-control', 'placeholder': 'New Password'
+        'class': 'form-control', 'placeholder': '新密碼'
     }), label="New Password")
     new_password2 = forms.CharField(max_length=50, widget=forms.PasswordInput(attrs={
-        'class': 'form-control', 'placeholder': 'Confirm New Password'
+        'class': 'form-control', 'placeholder': '再次確認新密碼'
     }), label="Confirm New Password")
 
+class UserUpdateForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['name', 'email', 'sex', 'phone_num', 'birthday', 'address', "upload_profile"]
+        widgets = {
+        'name': forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': '名字'
+        }),
+        'email': forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Email'
+        }),
+        'sex': forms.Select(choices=(('男', 'MALE'), ('女', 'FEMALE'), ("其他", 'ELSE')), attrs={
+                'class': 'form-control',
+                'placeholder': '性別'
+        }),
+        'phone_num': forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': '電話'
+        }),
+        'birthday': forms.DateInput(attrs={
+            'type': 'date',
+            'class': 'form-control',
+            'placeholder': '出生日期'
+        }),
+        'address': forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': '地址'
+        }),
+        'upload_profile': forms.FileInput(attrs={
+                'class': 'form-control',
+                'placeholder': '使用者圖片'
+        })
+        }
+    
 
 class ElderRecordForm(forms.ModelForm):
     class Meta:

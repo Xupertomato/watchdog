@@ -2,16 +2,11 @@
 {% load static %}
 
 {% block content %}
-
+<link href='https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css' rel='stylesheet'></link>
 <div class="row">
     <div class="col-sm-12">
-        <div class="card">
-            <!-- <div class="card-header">
-                <h5>新增長者</h5>
-            </div>> -->
-        </div>
             <div class="col-md-12">
-                <form method="post" class="card-body text-center">
+                <form method="post" enctype="multipart/form-data" class="card-body text-center">
                     <div class="row">
                         <div class="col-md-12">
                     <div class="form-group">
@@ -21,16 +16,30 @@
                     </div>
                     <h3 class="mb-12">新增照護長者</h3>
                     {% for field in form %}
+                        {% if field.name != 'related_users' and field.name != 'upload_profile' %}
                         <div class="form-group">
-                            {% if field.name == 'sex' %}
-                                
-                                {{ field }}
-                            {% else %}
-                                
-                                {{ field }}
-                            {% endif %}
-                        </div>
+                                        {{ field }}
+                                        <span class="text-danger d-block text-left">{{ field.errors }}</span>
+                                    </div>
+                        {% endif %}
+
                         <span class="text-danger d-block text-left">{{ field.errors }}</span>
+                    {% endfor %}
+                    <div class="form-group text-left">使用者照片：
+                                <label class="btn btn-primary ">
+                                    <input id="upload_profile" style="display:none;" type="file" name="upload_profile">
+                                    <i class="fa fa-photo"></i>選擇照片
+                                </label>
+                                <span class="text-danger d-block text-left">{{ form.upload_profile.errors }}</span>
+                            </div>
+                    {% for field in form %}
+                        {% if field.name == 'related_users' %}
+                        <div class="form-group text-left">
+                            <br>
+                            <h4 class="form-label">選擇關聯管理者</h4>
+                            {{ field }} 
+                        </div>
+                        {% endif %}
                     {% endfor %}
                     <div class="form-group text-left mt-4">
                         <div class="checkbox checkbox-fill d-inline">
