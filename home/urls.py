@@ -18,12 +18,12 @@ urlpatterns = [
   path('components/feather-icon/', views.icon_feather, name='icon_feather'),
 
   # Forms and Tables
-  path('forms/upload_elder_record/', views.upload_elder_record, name='add_record'),
+  path('forms/upload_elder_record/', views.ElderRecordUploadView.upload_elder_record, name='add_record'),
   path('tables/basic-tables/', views.basic_tables, name='basic_tables'),
 
   # Chart and Maps
-  path('charts/morris-chart/', views.morris_chart, name='morris_chart'),
-  path('maps/google-maps/', views.google_maps, name='google_maps'),
+  # path('charts/morris-chart/', views.morris_chart, name='morris_chart'),
+  # path('maps/google-maps/', views.google_maps, name='google_maps'),
 
   # Authentication
   path('accounts/register/', views.UserRegistrationView.as_view(), name='register'),

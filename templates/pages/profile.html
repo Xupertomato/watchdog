@@ -12,18 +12,34 @@
     <div class="col-sm">
       <div class="card">
         <div class="card-header">
-          <h3>{{ user.username }}'s Profile</h3>
+          <h3>{{ user.name }}'s Profile</h3>
         </div>
         <div class="card-block">
           <div class="row">
             <div class="col-sm-12 mb-4">
                 <form method="POST" enctype="multipart/form-data">
                   {% csrf_token %}
+                  {% if form.errors %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                      <strong>錯誤!</strong> 每個欄位都必須填寫！<br>
                   
+                      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                  {% elif messages %}
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                      {% for message in messages %}
+                        <strong>成功！</strong> {{ message }}<br>
+                      {% endfor %}
+                      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                  {% endif %}
                   {% for field in form %}
                       {% if field.name != "upload_profile" %}
                           <div class="form-group">
-                              <!-- <label for="{{ field.id_for_label }}" class="float-left">{{ field.label }}</label> -->
                               {{ field }}
                               <span class="text-danger d-block text-left">{{ field.errors }}</span>
                           </div>
@@ -31,17 +47,16 @@
                   {% endfor %}
                   <div class="d-flex align-items-left justify-content-left flex-column">
                     <div class="text-left">
+                      <div class="w-50 p-3">
+                        <img src="{{ MEDIA_URL }}Profile/{{ request.user.username }}/{{ request.user.username }}.jpg" alt="profile image" class="img-fluid" style="box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);" height="200" width="200">
+                    </div>                    
                       <label class="btn btn-primary ">
                         <input id="upload_profile" style="display:none;" type="file" name="upload_profile">
                         <i class="fa fa-photo"></i>更換照片
                       </label>
-                      <div class="w-50 p-3">
-                        <img src="{{ MEDIA_URL }}Profile/{{ request.user.username }}/{{ request.user.username }}.jpg" alt="profile image"
-                          class="img-fluid ">
-                      </div>
                     </div>
                   </div>
-                  <button type="submit" class="btn btn-primary">更新</button>
+                  <button type="submit" class="btn btn-primary mx-auto d-block">更新</button>
                 </form>
               </div>
             </div>

@@ -5,9 +5,9 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.dispatch import receiver
-from django.db.models.signals import post_save
 from django.utils import timezone
-import os
+import os,datetime
+
 
 def upload_profile(instance, filename):
     userid = instance.username
@@ -18,6 +18,7 @@ def upload_profile(instance, filename):
     # If a file with this name already exists, delete it
     existing_file_path = os.path.join(upload_dir, filename)
     if os.path.isfile(existing_file_path):
+        print("Deleting existing")
         os.remove(existing_file_path)
 
     # Return the original filename to save the new file with that name
@@ -48,7 +49,7 @@ class User(AbstractUser):
         max_length=10, choices=SexTypes.choices, default=base_sex_type, verbose_name="sex"
     )
     
-    birthday = models.DateField(verbose_name="birthday", default=timezone.localdate)
+    birthday = models.DateField(verbose_name="birthday")
     
     # 手機號碼
     phone_num = models.CharField(
@@ -63,9 +64,8 @@ class User(AbstractUser):
     upload_profile = models.FileField(upload_to=upload_profile, null=True, blank=True, default=None)
     
     def save(self, *args, **kwargs):
-        if not self.pk:   
-            self.type = self.type
-            return super().save(*args, **kwargs)
+        self.type = self.type
+        return super().save(*args, **kwargs)
     
     def get_absolute_url(self):
         return reverse("users:detail", kwargs={"username": self.username})
@@ -110,15 +110,18 @@ class Manager(User):
             self.type = User.Types.MANAGER
         return super().save(*args, **kwargs)
 
-def get_upload_path(instance, filename):
+def media_upload_path(instance, filename):
     user = instance.uploader
     username = user.username
-    filename = username+".jpg"
     return os.path.join("Elder Media Record", username, filename)
 
 class ElderRecord(models.Model):
-    dateTimeOfUpload = models.DateTimeField(auto_now = True)
-    user_tag = models.ManyToManyField(User, related_name='user_tag')
-    uploader = models.OneToOneField(User, on_delete=models.CASCADE)
-    uploadedFile = models.FileField(upload_to=get_upload_path)
+    DatetimeOfUpload = models.DateTimeField(auto_now=True)
+    taggedElder = models.ManyToManyField(User, related_name='taggedElder')
+    uploader = models.ForeignKey(User, on_delete=models.CASCADE, related_name='records_uploader')
+    uploadedFile = models.FileField(upload_to=media_upload_path)
+
+    def __str__(self):
+        return self.uploadedFile.name
+
     

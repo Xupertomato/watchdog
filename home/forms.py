@@ -4,7 +4,9 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from .models import *
-
+from multiupload.fields import MultiFileField, MultiMediaField
+from django.core.files.uploadedfile import InMemoryUploadedFile
+import io
 
 class RegistrationForm(UserCreationForm):
     password1 = forms.CharField(
@@ -82,7 +84,7 @@ class ElderRegistrationForm(UserCreationForm):
     )      
     class Meta:
         model = Elder
-        fields = ('username',  "name", 'email', "sex", "phone_num", "birthday", "address", 'upload_profile', "related_users")
+        fields = ('username', "name", "sex", "phone_num", "birthday", "address", 'upload_profile', "related_users")
         
         widgets = {
         'username': forms.TextInput(attrs={
@@ -92,10 +94,6 @@ class ElderRegistrationForm(UserCreationForm):
         'name': forms.TextInput(attrs={
             'class': 'form-control',
             'placeholder': '名字'
-        }),
-        'email': forms.EmailInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Email'
         }),
         'sex': forms.Select(choices=(('男', 'MALE'), ('女', 'FEMALE'), ("其他", 'ELSE')), attrs={
                 'class': 'form-control',
@@ -176,10 +174,9 @@ class UserUpdateForm(forms.ModelForm):
             'class': 'form-control',
             'placeholder': '電話'
         }),
-        'birthday': forms.DateInput(attrs={
+        'birthday': forms.DateInput(format=('%Y-%m-%d'),attrs={
             'type': 'date',
-            'class': 'form-control',
-            'placeholder': '出生日期'
+            'class': 'form-control'
         }),
         'address': forms.TextInput(attrs={
             'class': 'form-control',
@@ -190,27 +187,39 @@ class UserUpdateForm(forms.ModelForm):
                 'placeholder': '使用者圖片'
         })
         }
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
     
-
 class ElderRecordForm(forms.ModelForm):
     class Meta:
-        model = ElderRecord
-        fields = ['user_tag', 'uploadedFile']
+        model = ElderRecord  
+        fields = ['taggedElder']
         widgets = {
-            'user_tag': forms.CheckboxSelectMultiple(),
+            'taggedElder': forms.CheckboxSelectMultiple(),
         }
+        
+    uploadedFile = MultiMediaField(
+        min_num=1,
+        max_num=10,
+    )
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)  # save request object as instance attribute
         super(ElderRecordForm, self).__init__(*args, **kwargs)
 
     def save(self, commit=True):
-        elder_record = super(ElderRecordForm, self).save(commit=False)
-        if commit:
-            elder_record.uploader = self.request.user  # set uploader as current user
-            elder_record.save()
-            self.save_m2m()
-        return elder_record
+        elder_records = []
+        for uploaded_file in self.cleaned_data['uploadedFile']:
+            elder_record = ElderRecord()
+            elder_record.uploader = self.request.user
+            elder_record.uploadedFile.save(uploaded_file.name, uploaded_file)
+            elder_record.taggedElder.set(self.cleaned_data['taggedElder'])
+            if commit:
+                elder_record.save(commit=False)
+            elder_records.append(elder_record)
+        return elder_records
+
 
 
     

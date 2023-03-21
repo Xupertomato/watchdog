@@ -8,34 +8,47 @@
     <div class="col-sm-12">
       <div class="card">
         <div class="card-header">
-          <h5>新增長者</h5>
+          <h5>新增長者紀錄</h5>
         </div>
         <div class="card-body">
           <div class="row">
             <div class="col-md-12">
               <form method="POST" enctype="multipart/form-data">
-                {% csrf_token %}
+                {% csrf_token %}           
+                {% if form.errors %}
+                  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong>錯誤!</strong> 每個欄位都必須填寫！<br>
+                
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                {% elif messages %}
+                
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                  {% for message in messages %}
+                    <strong>成功！</strong> {{ message }}<br>
+                  {% endfor %}
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+              
+                {% endif %}
                 <div class="form-group">
-                  <label>請在下方選擇要上傳的檔案</label><br>
-                  <input type="file" name="uploadedFile">
+                  <label>請在下方選擇要上傳的檔案(一次最多只能選擇10個檔案)</label><br>
+                  <input type="file" name="uploadedFile" multiple>
                 </div>
                 <div class="form-group">
-                  <label for="tagSelect">長者標籤</label>
+                  <label for="tagSelect">長者標籤(請選擇有出現在檔案中的長者)</label>
                   {% for user in users%}
                     <div class="form-check">
-                      <input class="form-check-input" type="checkbox" name="user_tag" value="{{ user.id }}" id="{{ user.username }}">
+                      <input class="form-check-input" type="checkbox" name="taggedElder" value="{{ user.id }}" id="{{ user.username }}">
                       <label class="form-check-label" for="{{ user.username }}">
                         {{ user.username }}
                       </label>
                     </div>
                   {% endfor %}
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="other" value="true" id="other">
-                    <label class="form-check-label" for="other">
-                      其他
-                    </label>
-                    <input type="text" class="form-control" name="other_text" id="other_text" style="display:none;">
-                  </div>
                 </div>
                 <!-- <div class="form-group">
                   <label>影像日期</label>
