@@ -16,7 +16,10 @@ def upload_profile(instance, filename):
     upload_dir = os.path.join("Profile", userid)
 
     # If a file with this name already exists, delete it
-    existing_file_path = os.path.join(upload_dir, filename)
+    existing_file_path = os.path.join(upload_dir)
+    existing_file_path = str(existing_file_path) + "/"
+    print(os.path.isfile(existing_file_path))
+    print(existing_file_path)
     if os.path.isfile(existing_file_path):
         print("Deleting existing")
         os.remove(existing_file_path)
