@@ -211,12 +211,13 @@ class ElderRecordForm(forms.ModelForm):
     def save(self, commit=True):
         elder_records = []
         for uploaded_file in self.cleaned_data['uploadedFile']:
-            elder_record = ElderRecord()
+            elder_record = super().save(commit=False)
             elder_record.uploader = self.request.user
+            elder_record.save()  # Save the elder_record instance to generate the ID
             elder_record.uploadedFile.save(uploaded_file.name, uploaded_file)
-            elder_record.taggedElder.set(self.cleaned_data['taggedElder'])
+            elder_record.taggedElder.set(self.cleaned_data['taggedElder'])  # Set the many-to-many relationship
             if commit:
-                elder_record.save(commit=False)
+                elder_record.save()
             elder_records.append(elder_record)
         return elder_records
 

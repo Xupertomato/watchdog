@@ -1,0 +1,51 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+
+    <!-- [ Main Content ] start -->
+    <div class="row">
+
+      <!-- [ User Records ] start -->
+      <div class="col-xl-12">
+        <div class="card">
+          <div class="card-header">
+            <h5>長者影片紀錄</h5>
+            <!-- <span class="d-block m-t-5">use class <code>table-hover</code> inside table element</span> -->
+          </div>
+          <div class="card-block table-border-style">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>上傳時間</th>
+                    <th>上傳者</th>
+                    <th>下載檔案</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for record in records %}
+                  <tr>
+                    <th scope="row">{{ forloop.counter }}</th>
+                    <td>{{ record.DatetimeOfUpload }}</td>
+                    <td>{{ record.uploader }}</td>
+                    <td><a href="{{ record.uploadedFile.url }}" target="_blank">下載</a></td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="4">No records found.</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- [ User Records ] end -->
+
+    </div>
+    <!-- [ Main Content ] end -->
+
+{% endblock content %}

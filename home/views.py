@@ -11,6 +11,12 @@ from django.views.generic.edit import CreateView
 from django.contrib import messages
 from django.views.generic.edit import FormView
 from django.db.models.signals import pre_save
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.utils import timezone
+from django.views.generic.list import ListView
+from django.db.models import Q
+
+
 def index(request):
   context = {
     'segment': 'index'
@@ -30,9 +36,9 @@ def add_users(request):
 def basic_tables(request):
   context = {
     'parent': 'tables',
-    'segment': 'basic_tables'
+    'segment': 'elder_data'
   }
-  return render(request, 'pages/tbl_bootstrap.html', context)
+  return render(request, 'pages/elder_data.html', context)
       
 # Authentication
 class UserRegistrationView(CreateView):
@@ -52,6 +58,18 @@ class ElderRegistrationView(PermissionRequiredMixin, CreateView):
     def has_permission(self):
         user = self.request.user
         return super().has_permission() or (user.is_authenticated and user.type == 'MANAGER')
+    
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.type = User.Types.ELDER
+        self.object.save()
+        
+        related_users = form.cleaned_data['related_users']
+        user_relationship = UserRelationship.objects.create()
+        user_relationship.elders.add(self.object)
+        user_relationship.managers.add(*related_users)
+        
+        return super().form_valid(form)
 
 class UserLoginView(LoginView):
   template_name = 'accounts/auth-signin.html'
@@ -108,6 +126,16 @@ class ElderRecordUploadView(FormView):
           
       users = User.objects.filter(type='ELDER')
       return render(request, 'pages/add_record.html', {'form': form, 'users': users})
+    
+    
+class ElderRecordViewView(LoginRequiredMixin, ListView):
+  model = ElderRecord
+  template_name = 'pages/elder_data.html'
+  context_object_name = 'records'
+  
+  def get_queryset(self):
+    # Filter the records based on the current user's tagged elders
+    return super().get_queryset().filter(taggedElder=self.request.user)
 
 ################################################################
 # Chart and Maps

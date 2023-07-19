@@ -6,8 +6,8 @@ from django.utils.translation import gettext_lazy as _
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.dispatch import receiver
 from django.utils import timezone
-import os,datetime
-
+import os
+from datetime import datetime
 
 def upload_profile(instance, filename):
     userid = instance.username
@@ -72,7 +72,7 @@ class User(AbstractUser):
     
     def get_absolute_url(self):
         return reverse("users:detail", kwargs={"username": self.username})
-    
+
     
     
 class UserRelationship(models.Model):
@@ -114,9 +114,18 @@ class Manager(User):
         return super().save(*args, **kwargs)
 
 def media_upload_path(instance, filename):
-    user = instance.uploader
-    username = user.username
-    return os.path.join("Elder Media Record", username, filename)
+    uploader = instance.uploader
+    uploadername = uploader.username
+
+    current_datetime = datetime.now().strftime('%Y%m%d%H%M%S')  # Get current datetime as a string
+
+    # Get the names of all tagged elders and join them with underscores
+    tagged_elders = '_'.join([elder.username for elder in instance.taggedElder.all()])
+
+    # Combine the filename with the datetime, tagged elders, and file extension
+    new_filename = f"{current_datetime}_{tagged_elders}_{filename}"
+
+    return os.path.join("Elder Media Record", uploadername, new_filename)
 
 class ElderRecord(models.Model):
     DatetimeOfUpload = models.DateTimeField(auto_now=True)
