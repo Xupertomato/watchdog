@@ -20,7 +20,8 @@ urlpatterns = [
   # Forms and Tables
   path('forms/upload_elder_record/', views.ElderRecordUploadView.upload_elder_record, name='add_record'),
   path('tables/basic-tables/', views.basic_tables, name='basic_tables'),
-  path('tables/elder_data/', ElderRecordViewView.as_view(), name='elder_data'),
+  path('tables/elder_record/<str:username>/', ElderRecordViewView.as_view(), name='elder_record'),
+  path('elder-list/', ElderListView.as_view(), name='elder_list'),
 
   # Chart and Maps
   # path('charts/morris-chart/', views.morris_chart, name='morris_chart'),

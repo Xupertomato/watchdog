@@ -4,7 +4,7 @@ from django.contrib.auth.views import LoginView, PasswordChangeView, PasswordRes
 from django.views.generic import CreateView
 from django.contrib.auth import logout
 from .models import *
-from django.contrib.auth.decorators import login_required,permission_required
+from django.contrib.auth.decorators import login_required, permission_required, method_decorator
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from .forms import *
 from django.views.generic.edit import CreateView
@@ -15,6 +15,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
 from django.views.generic.list import ListView
 from django.db.models import Q
+from django.http import Http404
+from django.views.generic import DetailView
 
 
 def index(request):
@@ -136,6 +138,39 @@ class ElderRecordViewView(LoginRequiredMixin, ListView):
   def get_queryset(self):
     # Filter the records based on the current user's tagged elders
     return super().get_queryset().filter(taggedElder=self.request.user)
+  
+class ElderListView(LoginRequiredMixin, ListView):
+    model = UserRelationship
+    template_name = 'pages/elder_list.html'
+    context_object_name = 'relationship'
+
+    def get_queryset(self):
+        # Retrieve the UserRelationship instance where the manager is in the 'managers' field
+        manager_relationship = UserRelationship.objects.filter(managers=self.request.user).first()
+        if manager_relationship:
+            return manager_relationship.elders.all()
+        else:
+            return None
+          
+@method_decorator(login_required, name='dispatch')
+class ElderRecordDetailView(DetailView):
+    model = ElderRecord
+    template_name = 'elder_record.html'
+    context_object_name = 'record'
+
+    def get_queryset(self):
+        # Filter the records based on the current user's tagged elders
+        return super().get_queryset().filter(taggedElder=self.request.user)
+
+    def dispatch(self, request, *args, **kwargs):
+        # Check if the requesting user is a manager with a relationship to the elder
+        record = self.get_object()
+        elder = record.taggedElder.first()  # Assuming an elder is always associated with a record
+
+        if elder and request.user in elder.managers.all():
+            return super().dispatch(request, *args, **kwargs)
+        else:
+            raise Http404("您沒有權限瀏覽此頁面！")
 
 ################################################################
 # Chart and Maps

@@ -1,0 +1,63 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+
+    <!-- [ Main Content ] start -->
+    <div class="row">
+
+        <!-- [ Manager Elders List ] start -->
+        <div class="col-xl-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>長者列表</h5>
+                </div>
+                <div class="card-block table-border-style">
+                    <div class="table-responsive">
+                        {% if relationship %}
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>身份證字號</th>
+                                        <th>姓名</th>
+                                        <th>性別</th>
+                                        <th>電話</th>
+                                        <th>生日</th>
+                                        <th>地址</th>
+                                        <th>操作</th> <!-- New column for the button -->
+                                        <!-- Add more fields as needed -->
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for elder in relationship %}
+                                        <tr>
+                                            <td>{{ forloop.counter }}</td>
+                                            <td>{{ elder.username }}</td>
+                                            <td>{{ elder.name }}</td>
+                                            <td>{{ elder.sex }}</td>
+                                            <td>{{ elder.phone_num }}</td>
+                                            <td>{{ elder.birthday }}</td>
+                                            <td>{{ elder.address }}</td>
+                                            <td>
+                                              <a href="{% url 'elder_record' elder.username %}" class="btn btn-primary btn-sm">View Record</a>
+                                          </td>
+                                           <!-- Button to the specific elder's record -->
+                                            <!-- Add more fields as needed -->
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <p>No elders found.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- [ Manager Elders List ] end -->
+
+    </div>
+    <!-- [ Main Content ] end -->
+
+{% endblock content %}
