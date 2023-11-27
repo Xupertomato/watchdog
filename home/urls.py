@@ -20,7 +20,7 @@ urlpatterns = [
   # Forms and Tables
   path('forms/upload_elder_record/', views.ElderRecordUploadView.upload_elder_record, name='add_record'),
   path('tables/basic-tables/', views.basic_tables, name='basic_tables'),
-  path('tables/elder_record/<str:username>/', ElderRecordViewView.as_view(), name='elder_record'),
+  path('tables/elder_record/', ElderRecordViewView.as_view(), name='elder_record'),
   path('elder-list/', ElderListView.as_view(), name='elder_list'),
 
   # Chart and Maps
@@ -49,7 +49,8 @@ urlpatterns = [
     template_name='accounts/auth-password-reset-complete.html'
   ), name='password_reset_complete'),
 
-  #
-  path('profile/', views.profile, name='profile'),
+  #個人介面
+  path('profile/<str:username>', views.profile_page, name='profile'),
+  path('profile/edit/<str:username>', views.edit_profile, name='edit_profile'),
   
 ]

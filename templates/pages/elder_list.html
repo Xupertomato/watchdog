@@ -25,7 +25,7 @@
                                         <th>電話</th>
                                         <th>生日</th>
                                         <th>地址</th>
-                                        <th>操作</th> <!-- New column for the button -->
+                                        <th>個人頁面</th> <!-- New column for the button -->
                                         <!-- Add more fields as needed -->
                                     </tr>
                                 </thead>
@@ -40,7 +40,7 @@
                                             <td>{{ elder.birthday }}</td>
                                             <td>{{ elder.address }}</td>
                                             <td>
-                                              <a href="{% url 'elder_record' elder.username %}" class="btn btn-primary btn-sm">View Record</a>
+                                              <a href="{% url 'profile' elder.username %}" class="btn btn-primary btn-sm">View Record</a>
                                           </td>
                                            <!-- Button to the specific elder's record -->
                                             <!-- Add more fields as needed -->

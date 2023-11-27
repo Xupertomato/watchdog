@@ -134,7 +134,7 @@
                   Settings</a></li> -->
                   
               {%if request.user.is_authenticated %}
-              <li><a href="{% url 'profile' %}"  class="dropdown-item"><i class="feather icon-user"></i>使用者資料</a></li>
+              <li><a href="{% url 'profile' request.user.username %}"  class="dropdown-item"><i class="feather icon-user"></i>使用者資料</a></li>
               {% endif %}
 
               {% if not request.user.is_authenticated %}             

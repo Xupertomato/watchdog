@@ -1,0 +1,87 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+<html lang='zh-Hant'></html>
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+
+
+{% block content %}
+
+<link href='https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css' rel='stylesheet'></link>
+  <!-- [ Main Content ] start -->
+  <div class="row">
+    <div class="col-sm">
+      <div class="card">
+        <div class="card-header">
+          <h3>{{ user.name }}'s Profile</h3>
+        </div>
+        <div class="card-block">
+          <div class="row">
+            <div class="col-sm-12 mb-4">
+                <form method="POST" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  {% if form.errors %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                      <strong>錯誤!</strong> 每個欄位都必須填寫！<br>
+                  
+                      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                  {% elif messages %}
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                      {% for message in messages %}
+                        <strong>成功！</strong> {{ message }}<br>
+                      {% endfor %}
+                      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                  {% endif %}
+                  {% for field in form %}
+                      {% if field.name != "upload_profile" %}
+                          <div class="form-group">
+                              {{ field }}
+                              <span class="text-danger d-block text-left">{{ field.errors }}</span>
+                          </div>
+                      {% endif %}
+                  {% endfor %}
+                  <div class="d-flex align-items-left justify-content-left flex-column">
+                    <div class="text-left">
+                      <div class="w-50 p-3">
+                        <img id="user_uploaded_image" src="{{ MEDIA_URL }}Profile/{{ request.user.username }}/{{ request.user.username }}.jpg" alt="profile image" class="img-fluid" style="box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);" height="200" width="200">
+                    </div>                    
+                      <label class="btn btn-primary ">
+                        <input id="upload_profile" style="display:none;" type="file" name="upload_profile">
+                        <i class="fa fa-photo"></i>更換照片
+                      </label>
+                    </div>
+                  </div>
+                  <button type="submit" class="btn btn-primary mx-auto d-block">更新</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- [ Main Content ] end -->
+<script>
+  // replace image with user uplaoaded image
+  function updatePreviewImage(input) {
+    if (input.files && input.files[0]) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('user_uploaded_image').src = e.target.result;
+      }
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  document.getElementById('upload_profile').onchange = function() {
+    updatePreviewImage(this);
+  };
+</script>
+ {% endblock content %}

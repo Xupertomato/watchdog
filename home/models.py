@@ -8,6 +8,15 @@ from django.dispatch import receiver
 from django.utils import timezone
 import os
 from datetime import datetime
+from django.core.files.storage import FileSystemStorage
+from django.conf import settings
+import os
+
+class OverwriteStorage(FileSystemStorage):
+    def get_available_name(self, name, max_length):
+        if self.exists(name):
+            os.remove(os.path.join(settings.MEDIA_ROOT, name))
+        return name
 
 def upload_profile(instance, filename):
     userid = instance.username
@@ -18,14 +27,10 @@ def upload_profile(instance, filename):
     # If a file with this name already exists, delete it
     existing_file_path = os.path.join(upload_dir)
     existing_file_path = str(existing_file_path) + "/"
-    print(os.path.isfile(existing_file_path))
-    print(existing_file_path)
-    if os.path.isfile(existing_file_path):
-        print("Deleting existing")
-        os.remove(existing_file_path)
-
     # Return the original filename to save the new file with that name
+    
     return os.path.join("Profile", userid, filename)
+
 
 class User(AbstractUser):
     class Types(models.TextChoices):
@@ -64,9 +69,10 @@ class User(AbstractUser):
     address = models.CharField(max_length=255, verbose_name="address", default="")
     
     #使用者照片路徑
-    upload_profile = models.FileField(upload_to=upload_profile, null=True, blank=True, default=None)
+    upload_profile = models.FileField(upload_to=upload_profile, null=True, blank=True, default=None, storage=OverwriteStorage())
     
     def save(self, *args, **kwargs):
+        print(upload_profile)
         self.type = self.type
         return super().save(*args, **kwargs)
     
@@ -136,4 +142,44 @@ class ElderRecord(models.Model):
     def __str__(self):
         return self.uploadedFile.name
 
+class Questionnaire(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    assigned_to = models.ManyToManyField(User, related_name='assigned_questionnaires', limit_choices_to={'type__in': [User.Types.ADMIN, User.Types.MANAGER]})
+    assigned_at = models.DateTimeField(default=timezone.now)
+    deadline = models.DateTimeField()
+
+    def __str__(self):
+        return self.title
+
+class Question(models.Model):
+    TEXT = 'text'
+    AUDIO = 'audio'
+    VIDEO = 'video'
     
+    QUESTION_TYPE_CHOICES = [
+        (TEXT, 'Text'),
+        (AUDIO, 'Audio'),
+        (VIDEO, 'Video'),
+    ]
+
+    text = models.TextField()
+    question_type = models.CharField(max_length=10, choices=QUESTION_TYPE_CHOICES, default=TEXT)
+    multimedia_content = models.FileField(upload_to='question_multimedia/', blank=True, null=True)
+
+    def __str__(self):
+        return self.text 
+
+
+class Answer(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='answers')
+    questionnaire = models.ForeignKey(Questionnaire, on_delete=models.CASCADE, related_name='answers')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')
+    response_text = models.TextField(blank=True, null=True)
+    response_audio = models.FileField(upload_to='answer_audio/', blank=True, null=True)
+    response_video = models.FileField(upload_to='answer_video/', blank=True, null=True)
+    submitted_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.questionnaire.title} - {self.question.text}"
+ 

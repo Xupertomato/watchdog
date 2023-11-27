@@ -4,7 +4,8 @@ from django.contrib.auth.views import LoginView, PasswordChangeView, PasswordRes
 from django.views.generic import CreateView
 from django.contrib.auth import logout
 from .models import *
-from django.contrib.auth.decorators import login_required, permission_required, method_decorator
+from django.contrib.auth.decorators import login_required, permission_required
+from django.utils.decorators import method_decorator
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from .forms import *
 from django.views.generic.edit import CreateView
@@ -15,6 +16,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
 from django.views.generic.list import ListView
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
 from django.http import Http404
 from django.views.generic import DetailView
 
@@ -93,19 +95,26 @@ def logout_view(request):
   logout(request)
   return redirect('/')
 
+@login_required(login_url='/accounts/login/') 
+def profile_page(request, username):
+    user = get_object_or_404(User, username=username)
+    return render(request, 'pages/profile.html', {'user': user})
+
 @login_required(login_url='/accounts/login/')
-def profile(request):
+def edit_profile(request, username):
     if request.method == 'POST':
-        form = UserUpdateForm(request.POST, request.FILES, instance=request.user)
+        user = get_object_or_404(User, username=username)
+        form = UserUpdateForm(request.POST, request.FILES, instance=user)
         if form.is_valid():
             form.save()
             messages.success(request, f'成功更新個人資料！')
             return redirect('profile')
+            
     else:
         form = UserUpdateForm(instance=request.user)
 
     context = {'form': form}
-    return render(request, 'pages/profile.html', context)
+    return render(request, 'pages/profile_edit.html', context)
 
 class ElderRecordUploadView(FormView):
   template_name='add_record.html'
@@ -132,7 +141,7 @@ class ElderRecordUploadView(FormView):
     
 class ElderRecordViewView(LoginRequiredMixin, ListView):
   model = ElderRecord
-  template_name = 'pages/elder_data.html'
+  template_name = 'pages/elder_record.html'
   context_object_name = 'records'
   
   def get_queryset(self):
@@ -143,14 +152,17 @@ class ElderListView(LoginRequiredMixin, ListView):
     model = UserRelationship
     template_name = 'pages/elder_list.html'
     context_object_name = 'relationship'
-
+    
     def get_queryset(self):
-        # Retrieve the UserRelationship instance where the manager is in the 'managers' field
-        manager_relationship = UserRelationship.objects.filter(managers=self.request.user).first()
-        if manager_relationship:
-            return manager_relationship.elders.all()
-        else:
-            return None
+      manager_relationships = UserRelationship.objects.filter(managers=self.request.user)
+      
+      # Create an empty list to store all the elders managed by the user
+      elders_managed = []
+
+      for relationship in manager_relationships:
+          elders_managed.extend(relationship.elders.all())
+
+      return elders_managed
           
 @method_decorator(login_required, name='dispatch')
 class ElderRecordDetailView(DetailView):
