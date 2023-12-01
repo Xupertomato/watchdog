@@ -11,11 +11,9 @@ from .forms import *
 from django.views.generic.edit import CreateView
 from django.contrib import messages
 from django.views.generic.edit import FormView
-from django.db.models.signals import pre_save
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
 from django.views.generic.list import ListView
-from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.http import Http404
 from django.views.generic import DetailView
@@ -43,7 +41,75 @@ def basic_tables(request):
     'segment': 'elder_data'
   }
   return render(request, 'pages/elder_data.html', context)
-      
+
+
+#問卷相關
+def add_questionnaire_view(request):
+    if request.method == 'POST':
+        form = QuestionnaireForm(request.POST)
+        if form.is_valid():
+            questionnaire = form.save()
+            return redirect('questionnaire_list')
+    else:
+        form = QuestionnaireForm()
+
+    return render(request, 'pages/add_questionnaire.html', {'form': form})
+    return render(request, 'pages/add_questionnaire.html', {'form': form})      
+
+
+def questionnaire_list_view(request):
+    questionnaires = Questionnaire.objects.all()
+    return render(request, 'pages/questionnaire_list.html', {'questionnaires': questionnaires})
+  
+@login_required(login_url='/accounts/login/')
+def answer_page_view(request, pk):
+    questionnaire = get_object_or_404(Questionnaire, pk=pk)
+    questions = questionnaire.question_set.all()  # Corrected this line
+
+    if request.method == 'POST':
+        form = AnswerForm(request.POST, request.FILES)
+        if form.is_valid():
+            # Save the answers
+            for question in questions:
+                Answer.objects.create(
+                    user=request.user,
+                    questionnaire=questionnaire,
+                    question=question,
+                    response_text=form.cleaned_data.get(f'response_text_{question.id}'),
+                    response_audio=form.cleaned_data.get(f'response_audio_{question.id}'),
+                    response_video=form.cleaned_data.get(f'response_video_{question.id}'),
+                )
+            return render(request, 'pages/success_page.html')  # Customize this page as needed
+    else:
+        form = AnswerForm()
+
+    return render(request, 'pages/answer_page.html', {'questionnaire': questionnaire, 'questions': questions, 'form': form})
+
+def edit_questionnaire_view(request, pk):
+    questionnaire = get_object_or_404(Questionnaire, pk=pk)
+
+    if request.method == 'POST':
+        form = QuestionnaireForm(request.POST, instance=questionnaire)
+        if form.is_valid():
+            form.save()
+            # Redirect to the questionnaire list or any other page after saving
+            return redirect('questionnaire_list')
+    else:
+        form = QuestionnaireForm(instance=questionnaire)
+
+    return render(request, 'pages/edit_questionnaire.html', {'form': form})
+
+def delete_questionnaire_view(request, pk):
+    questionnaire = get_object_or_404(Questionnaire, pk=pk)
+
+    if request.method == 'POST':
+        questionnaire.delete()
+        # Redirect to the questionnaire list or any other page after deletion
+        return redirect('questionnaire_list')
+
+    return render(request, 'pages/delete_questionnaire_confirm.html', {'questionnaire': questionnaire})
+  
+  
 # Authentication
 class UserRegistrationView(CreateView):
   template_name = 'accounts/auth-signup.html'
@@ -103,7 +169,7 @@ def profile_page(request, username):
 @login_required(login_url='/accounts/login/')
 def edit_profile(request, username):
     if request.method == 'POST':
-        user = get_object_or_404(User, username=username)
+        user = get_object_or_404(User, username=username)  # noqa: F405
         form = UserUpdateForm(request.POST, request.FILES, instance=user)
         if form.is_valid():
             form.save()

@@ -3,8 +3,7 @@ from django.contrib.auth.models import User, AbstractUser
 from django.contrib.auth.models import AbstractUser
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
-from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
-from django.dispatch import receiver
+from django.core.validators import RegexValidator
 from django.utils import timezone
 import os
 from datetime import datetime
@@ -57,7 +56,7 @@ class User(AbstractUser):
         max_length=10, choices=SexTypes.choices, default=base_sex_type, verbose_name="sex"
     )
     
-    birthday = models.DateField(verbose_name="birthday")
+    birthday = models.DateField(verbose_name="birthday", default=datetime(1990, 1, 1))
     
     # 手機號碼
     phone_num = models.CharField(
@@ -145,7 +144,7 @@ class ElderRecord(models.Model):
 class Questionnaire(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
-    assigned_to = models.ManyToManyField(User, related_name='assigned_questionnaires', limit_choices_to={'type__in': [User.Types.ADMIN, User.Types.MANAGER]})
+    assigned_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='assigned_questionnaires')
     assigned_at = models.DateTimeField(default=timezone.now)
     deadline = models.DateTimeField()
 
@@ -163,6 +162,7 @@ class Question(models.Model):
         (VIDEO, 'Video'),
     ]
 
+    questionnaire = models.ForeignKey(Questionnaire, on_delete=models.CASCADE, related_name='questions')
     text = models.TextField()
     question_type = models.CharField(max_length=10, choices=QUESTION_TYPE_CHOICES, default=TEXT)
     multimedia_content = models.FileField(upload_to='question_multimedia/', blank=True, null=True)
@@ -182,4 +182,3 @@ class Answer(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.questionnaire.title} - {self.question.text}"
- 

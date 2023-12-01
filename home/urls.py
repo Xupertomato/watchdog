@@ -53,4 +53,12 @@ urlpatterns = [
   path('profile/<str:username>', views.profile_page, name='profile'),
   path('profile/edit/<str:username>', views.edit_profile, name='edit_profile'),
   
+  #問卷
+  path('add_questionnaire/', views.add_questionnaire_view, name='add_questionnaire'),
+  path('questionnaire_list/', views.questionnaire_list_view, name='questionnaire_list'),
+  path('questionnaire_history/', views.add_questionnaire_view, name='questionnaire_history'),
+  path('answer_page/<int:pk>/', views.answer_page_view, name='answer_page'),
+  path('edit_questionnaire/<int:pk>/', views.edit_questionnaire_view, name='edit_questionnaire'),
+  path('delete_questionnaire/<int:pk>/', delete_questionnaire_view, name='delete_questionnaire'),
+
 ]

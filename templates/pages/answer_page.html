@@ -1,0 +1,30 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+  <div class="row">
+    <div class="col-sm-12">
+      <div class="card">
+        <div class="col-md-12">
+          <h3 class="mb-12">{{ questionnaire.title }} - Answer Page</h3>
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% for question in questions %}
+              <div class="form-group">
+                <label for="response_text_{{ question.id }}">{{ question.text }}</label>
+                <textarea name="response_text_{{ question.id }}" class="form-control" required></textarea>
+              </div>
+              <div class="form-group">
+                <label for="response_audio_{{ question.id }}">Audio Response</label>
+                <input type="file" name="response_audio_{{ question.id }}" accept="audio/*">
+              </div>
+              <div class="form-group">
+                <label for="response_video_{{ question.id }}">Video Response</label>
+                <input type="file" name="response_video_{{ question.id }}" accept="video/*">
+              </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary">Submit Answers</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

@@ -117,13 +117,27 @@
               class="pcoded-micon"><i class="feather icon-map"></i></span><span class="pcoded-mtext">Maps</span></a>
         </li> -->
         <li class="nav-item pcoded-menu-caption">
-          <label>其他</label>
+          <label>問卷</label>
         </li>        
+        
         <li data-username="Manager Authentication" class="nav-item {% if 'form_elements' in segment %}active{% endif %}">
+          <a href="{% url 'questionnaire_list' %}" class="nav-link "><span class="pcoded-micon"><i
+            class="feather icon-edit"></i></span><span class="pcoded-mtext">進行中的問卷</span></a>
           {% if request.user.is_superuser %}
-          <a href="{% url 'register' %}" class="nav-link "><span class="pcoded-micon"><i
-                class="feather icon-edit"></i></span><span class="pcoded-mtext">新增使用者</span></a>
+          <a href="{% url 'add_questionnaire' %}" class="nav-link "><span class="pcoded-micon"><i
+                class="feather icon-edit"></i></span><span class="pcoded-mtext">新增問卷</span></a>
+          <a href="{% url 'add_questionnaire' %}" class="nav-link "><span class="pcoded-micon"><i
+            class="feather icon-edit"></i></span><span class="pcoded-mtext">問卷歷史紀錄</span></a> 
           {% endif %}
+
+          <li class="nav-item pcoded-menu-caption">
+            <label>其他</label>
+          </li>  
+          <li data-username="Manager Authentication" class="nav-item {% if 'form_elements' in segment %}active{% endif %}">
+            {% if request.user.is_superuser %}
+            <a href="{% url 'register' %}" class="nav-link "><span class="pcoded-micon"><i
+                class="feather icon-edit"></i></span><span class="pcoded-mtext">新增使用者</span></a> 
+            {% endif %}  
           <a href="{% url 'login' %}" class="nav-link "><span class="pcoded-micon"><i
             class="feather icon-unlock"></i></span><span class="pcoded-mtext">登入其他帳號</span></a>
         </li>

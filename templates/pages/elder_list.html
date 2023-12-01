@@ -35,12 +35,12 @@
                                             <td>{{ forloop.counter }}</td>
                                             <td>{{ elder.username }}</td>
                                             <td>{{ elder.name }}</td>
-                                            <td>{{ elder.sex }}</td>
+                                            <td>{{ elder.get_sex_display }}</td>
                                             <td>{{ elder.phone_num }}</td>
                                             <td>{{ elder.birthday }}</td>
                                             <td>{{ elder.address }}</td>
                                             <td>
-                                              <a href="{% url 'profile' elder.username %}" class="btn btn-primary btn-sm">View Record</a>
+                                              <a href="{% url 'profile' elder.username %}" class="btn btn-primary btn-sm">前往頁面</a>
                                           </td>
                                            <!-- Button to the specific elder's record -->
                                             <!-- Add more fields as needed -->

@@ -1,0 +1,18 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+  <div class="row">
+    <div class="col-sm-12">
+      <div class="card">
+        <div class="col-md-12">
+          <h3 class="mb-12">Confirm Deletion</h3>
+          <p>Are you sure you want to delete '{{ questionnaire.title }}'?</p>
+          <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Yes, delete</button>
+            <a href="{% url 'questionnaire_list' %}" class="btn btn-secondary">Cancel</a>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

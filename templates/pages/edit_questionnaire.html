@@ -1,0 +1,17 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+  <div class="row">
+    <div class="col-sm-12">
+      <div class="card">
+        <div class="col-md-12">
+          <h3 class="mb-12">Edit Questionnaire</h3>
+          <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

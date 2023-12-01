@@ -7,6 +7,7 @@ from .models import *
 from multiupload.fields import MultiFileField, MultiMediaField
 from django.core.files.uploadedfile import InMemoryUploadedFile
 import io
+from django.forms import formset_factory
 
 class RegistrationForm(UserCreationForm):
     password1 = forms.CharField(
@@ -221,6 +222,43 @@ class ElderRecordForm(forms.ModelForm):
             elder_records.append(elder_record)
         return elder_records
 
+class QuestionnaireForm(forms.ModelForm):
+    class Meta:
+        model = Questionnaire
+        fields = ['assigned_at','deadline','assigned_by']
+        widgets = {
+            'assigned_at': forms.TextInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
+            'deadline': forms.TextInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
+        }
+    def __init__(self, *args, **kwargs):
+        super(QuestionnaireForm, self).__init__(*args, **kwargs)
 
+        # Restrict choices for assigned_by to users with type 'admin'
+        self.fields['assigned_by'].queryset = User.objects.filter(type=User.Types.ADMIN)
+        
+class QuestionForm(forms.ModelForm):
+    class Meta:
+        model = Question
+        fields = ['text', 'question_type', 'multimedia_content']
+        widgets = {
+            'question_type': forms.Select(attrs={'class': 'form-control'}),
+            'multimedia_content': forms.FileInput(attrs={'class': 'form-control'}),
+        }
+
+AnswerFormSet = formset_factory(
+    form=forms.ModelForm,
+    formset=forms.BaseFormSet,
+    extra=0,
+    can_delete=False,
+)
+
+class AnswerForm(forms.ModelForm):
+    class Meta:
+        model = Answer
+        fields = ['response_text', 'response_audio', 'response_video']
+        widgets = {
+            'response_audio': forms.FileInput(attrs={'class': 'form-control'}),
+            'response_video': forms.FileInput(attrs={'class': 'form-control'}),
+        }
 
     

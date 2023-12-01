@@ -1,0 +1,52 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+
+<div class="col-xl-12 col-md-12">
+  <div class="card Recent-Users">
+    
+    <div class="card-block px-0 py-3">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <div class="card-header">
+            <h5>List of Questionnaires</h5>
+          </div>
+          <thead>
+            <tr>
+              <th>標題</th>
+              <th>發布時間</th>
+              <th>截止時間</th>
+              <th>動作</th>
+              <th class="text-right"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for questionnaire in questionnaires %}
+            <tr class="unread">
+              <td>
+                <h6 class="mb-1">{{ questionnaire.title}}</h6>
+              </td>
+              <td>
+                <h6 class="text-muted"><i class="fas fa-circle text-c-blue f-10 m-r-30"></i>{{ questionnaire.assigned_at }}</h6>
+              </td>
+              <td>
+                <h6 class="text-muted"><i class="fas fa-circle text-c-red f-10 m-r-30"></i>{{ questionnaire.deadline }}</h6>
+              </td>
+              <td>
+                <a href="{% url 'answer_page' pk=questionnaire.pk %}" class="label theme-bg text-white f-14">Answer</a>
+                {% if user.type == 'ADMIN' %}
+                <a href="{% url 'edit_questionnaire' pk=questionnaire.pk %}" class="label theme-bg2 text-white f-14">Edit</a> <a href="{% url 'delete_questionnaire' pk=questionnaire.pk %}" class="label theme-bg3 text-white f-14">Delete</a>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+
+          
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% endblock content %}
