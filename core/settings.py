@@ -50,11 +50,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
+    "corsheaders",
     "home",
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -63,6 +64,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    
 ]
 
 ROOT_URLCONF = "core.urls"
@@ -173,5 +175,33 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+
+ALLOWED_HOSTS = [
+    '127.0.0.1',  # Local development
+    'localhost',  # Local development
+    '2efb-140-115-82-114.ngrok-free.app',  # Ngrok domain
+]
+
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:8000',
+    'https://ed3d-140-115-82-114.ngrok-free.app',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+    'http://localhost:5085',
+    'http://127.0.0.1:8000',
+    'http://127.0.0.1:5085',
+    'https://28cb-125-229-126-55.ngrok-free.app',
+]
+
+
+#Google Form API
+SCOPES = 'https://www.googleapis.com/auth/forms.body.readonly'+ 'https://www.googleapis.com/auth/forms.responses.readonly'
+DISCOVERY_DOC = 'https://forms.googleapis.com/$discovery/rest?version=v1'
+GOOGLE_FORM_TOKEN_PATH = 'google_form_info/token.json'
+GOOGLE_FORM_CLIENT_SECRETS_PATH = 'google_form_info/client_secret.json'
+
+
 
 

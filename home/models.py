@@ -9,7 +9,8 @@ import os
 from datetime import datetime
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
-import os
+import hashlib
+from django.db.models import JSONField
 
 class OverwriteStorage(FileSystemStorage):
     def get_available_name(self, name, max_length):
@@ -70,9 +71,11 @@ class User(AbstractUser):
     #使用者照片路徑
     upload_profile = models.FileField(upload_to=upload_profile, null=True, blank=True, default=None, storage=OverwriteStorage())
     
-    def save(self, *args, **kwargs):
-        print(upload_profile)
+    user_hash = models.CharField(max_length=64, blank=False, editable=False)
+    def save(self, *args, **kwargs):  
         self.type = self.type
+        if self.username:
+            self.user_hash = hashlib.sha256(self.username.encode()).hexdigest()
         return super().save(*args, **kwargs)
     
     def get_absolute_url(self):
@@ -143,42 +146,33 @@ class ElderRecord(models.Model):
 
 class Questionnaire(models.Model):
     title = models.CharField(max_length=255)
-    description = models.TextField()
+    edit_url = models.URLField()
+    reply_url = models.URLField()
     assigned_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='assigned_questionnaires')
     assigned_at = models.DateTimeField(default=timezone.now)
-    deadline = models.DateTimeField()
 
     def __str__(self):
         return self.title
-
-class Question(models.Model):
-    TEXT = 'text'
-    AUDIO = 'audio'
-    VIDEO = 'video'
     
-    QUESTION_TYPE_CHOICES = [
-        (TEXT, 'Text'),
-        (AUDIO, 'Audio'),
-        (VIDEO, 'Video'),
-    ]
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None  # Check if this is a new instance
+        super(Questionnaire, self).save(*args, **kwargs)
 
-    questionnaire = models.ForeignKey(Questionnaire, on_delete=models.CASCADE, related_name='questions')
-    text = models.TextField()
-    question_type = models.CharField(max_length=10, choices=QUESTION_TYPE_CHOICES, default=TEXT)
-    multimedia_content = models.FileField(upload_to='question_multimedia/', blank=True, null=True)
-
-    def __str__(self):
-        return self.text 
+        if is_new:
+            # Create a new Answer instance for this Questionnaire
+            Answer.objects.create(
+                questionnaire=self,
+                response_data={}
+            )
 
 
 class Answer(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='answers')
-    questionnaire = models.ForeignKey(Questionnaire, on_delete=models.CASCADE, related_name='answers')
-    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')
-    response_text = models.TextField(blank=True, null=True)
-    response_audio = models.FileField(upload_to='answer_audio/', blank=True, null=True)
-    response_video = models.FileField(upload_to='answer_video/', blank=True, null=True)
-    submitted_at = models.DateTimeField(default=timezone.now)
+    questionnaire = models.ForeignKey(Questionnaire, on_delete=models.CASCADE, related_name='questionnaire')
+    questions = JSONField(blank=True, null=True)
+    response_data = JSONField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.user.username} - {self.questionnaire.title} - {self.question.text}"
+        return f"{self.questionnaire.title}"
+    
+
+

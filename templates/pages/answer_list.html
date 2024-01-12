@@ -1,0 +1,35 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Answer List</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Response Data</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for answer in answers %}
+            <tr>
+                <td>{{ answer.questionnaire.title }}</td>
+                <td>
+                    <!-- Assuming response_data is a dictionary or similar structure -->
+                    {% for key, value in answer.questions.items %}
+                    <strong>{{ key }}:</strong> {{ value }}<br>
+                    {% endfor %}
+                    {% for key, value in answer.response_data.items %}
+                    <strong>{{ key }}:</strong> {{ value }}<br>
+                    {% endfor %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="2">No answers found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

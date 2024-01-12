@@ -22,7 +22,6 @@ class RegistrationForm(UserCreationForm):
         choices=[(choice[0], choice[1]) for choice in User.Types.choices if choice[0] != 'ADMIN'],
         widget=forms.Select(attrs={'class': 'form-control', 'placeholder': '身份'}),
         )
-       
     class Meta:
         model = User
         fields = ('username', 'name', 'email', 'sex', 'type', 'phone_num', 'birthday', 'address', 'upload_profile')
@@ -118,12 +117,12 @@ class ElderRegistrationForm(UserCreationForm):
                 'placeholder': '使用者圖片'
         })
         }
-        
+
 
 class LoginForm(AuthenticationForm):
-  username = UsernameField(label=_("Your Username"), widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "身分證字號"}))
+  username = UsernameField(label=_("你的名字"), widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "身分證字號"}))
   password = forms.CharField(
-      label=_("Your Password"),
+      label=_("你的密碼"),
       strip=False,
       widget=forms.PasswordInput(attrs={"class": "form-control", "placeholder": "Password"}),
   )
@@ -137,22 +136,22 @@ class UserPasswordResetForm(PasswordResetForm):
 class UserSetPasswordForm(SetPasswordForm):
     new_password1 = forms.CharField(max_length=50, widget=forms.PasswordInput(attrs={
         'class': 'form-control', 'placeholder': '新密碼'
-    }), label="New Password")
+    }), label="新密碼")
     new_password2 = forms.CharField(max_length=50, widget=forms.PasswordInput(attrs={
         'class': 'form-control', 'placeholder': '再次確認新密碼'
-    }), label="Confirm New Password")
+    }), label="再次確認新密碼")
     
 
 class UserPasswordChangeForm(PasswordChangeForm):
     old_password = forms.CharField(max_length=50, widget=forms.PasswordInput(attrs={
         'class': 'form-control', 'placeholder': '舊密碼'
-    }), label='Old Password')
+    }), label='舊密碼')
     new_password1 = forms.CharField(max_length=50, widget=forms.PasswordInput(attrs={
         'class': 'form-control', 'placeholder': '新密碼'
-    }), label="New Password")
+    }), label="新密碼")
     new_password2 = forms.CharField(max_length=50, widget=forms.PasswordInput(attrs={
         'class': 'form-control', 'placeholder': '再次確認新密碼'
-    }), label="Confirm New Password")
+    }), label="再次確認新密碼")
 
 class UserUpdateForm(forms.ModelForm):
     class Meta:
@@ -225,40 +224,34 @@ class ElderRecordForm(forms.ModelForm):
 class QuestionnaireForm(forms.ModelForm):
     class Meta:
         model = Questionnaire
-        fields = ['assigned_at','deadline','assigned_by']
+        fields = ['edit_url', 'reply_url', 'assigned_by', 'assigned_at']
         widgets = {
-            'assigned_at': forms.TextInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
-            'deadline': forms.TextInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
-        }
-    def __init__(self, *args, **kwargs):
-        super(QuestionnaireForm, self).__init__(*args, **kwargs)
-
-        # Restrict choices for assigned_by to users with type 'admin'
-        self.fields['assigned_by'].queryset = User.objects.filter(type=User.Types.ADMIN)
-        
-class QuestionForm(forms.ModelForm):
-    class Meta:
-        model = Question
-        fields = ['text', 'question_type', 'multimedia_content']
-        widgets = {
-            'question_type': forms.Select(attrs={'class': 'form-control'}),
-            'multimedia_content': forms.FileInput(attrs={'class': 'form-control'}),
+            'assigned_at': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
         }
 
-AnswerFormSet = formset_factory(
-    form=forms.ModelForm,
-    formset=forms.BaseFormSet,
-    extra=0,
-    can_delete=False,
-)
+    def clean_edit_url(self):
+        edit_url = self.cleaned_data.get("edit_url")
+        if not edit_url.endswith("edit"):
+            raise ValidationError("URL must end with 'edit'.")
+        return edit_url
+
+    def clean_reply_url(self):
+        reply_url = self.cleaned_data.get("reply_url")
+        if "usp=pp_url&entry" not in reply_url:
+            raise ValidationError("URL must contain 'usp=pp_url&entry'.")
+
+        # Remove only the part after the last '='
+        parts = reply_url.rsplit('=', 1)
+        if len(parts) > 1:
+            reply_url = parts[0]
+
+        return reply_url
+
+
 
 class AnswerForm(forms.ModelForm):
     class Meta:
         model = Answer
-        fields = ['response_text', 'response_audio', 'response_video']
-        widgets = {
-            'response_audio': forms.FileInput(attrs={'class': 'form-control'}),
-            'response_video': forms.FileInput(attrs={'class': 'form-control'}),
-        }
-
+        fields = ['questions','response_data']
+        
     

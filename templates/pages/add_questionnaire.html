@@ -4,53 +4,51 @@
     <div class="col-sm-12">
       <div class="card">
         <div class="col-md-12">
-          <h3 class="mb-12">Add Questionnaire</h3>
-          <form method="post" enctype="multipart/form-data">
+          <h3 class="mb-12">新增問卷</h3>
+          <form method="post" enctype="multipart/form-data" id="questionnaireForm">
             {% csrf_token %}
-            {{ form.as_p }}
-            <div id="questions-container">
-              <!-- Container to hold dynamically added questions -->
+            {{questionnaire_form.as_p }}
+            <div id="question-container">
+              <!-- Reply Button -->
+              {% for questionnaire in questionnaires %}
+              <a href="{{ questionnaire.reply_url }}?usp=pp_url&entry.325964613={{ user.user_hash }}" class="reply-button">Reply to Questionnaire</a>
+              {% endfor %}
             </div>
-            <button type="button" class="add-question-btn" data-type="text">Add Text Question</button>
-            <button type="button" class="add-question-btn" data-type="multimedia">Add Multimedia Question</button>
-            <button type="submit">Submit</button>
+            <button type="submit" class="label theme-bg text-white f-14">提交</button>
           </form>
+          <div id="urlError" style="color: red; display: none;">
+            請輸入編輯問卷的網址
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
   <script>
-    $(document).ready(function () {
-      let questionCount = 0;
-
-      $(".add-question-btn").click(function () {
-        questionCount++;
-
-        let questionType = $(this).data("type");
-        let questionHtml = '';
-
-        if (questionType === 'text') {
-          questionHtml = `
-            <div class="question-container">
-              <label for="id_questions-${questionCount}-text">Text Question ${questionCount}:</label>
-              <input type="text" name="questions-${questionCount}-text" required>
-            </div>
-          `;
-        } else if (questionType === 'multimedia') {
-          questionHtml = `
-            <div class="question-container">
-              <label for="id_questions-${questionCount}-text">Multimedia Question ${questionCount}:</label>
-              <input type="text" name="questions-${questionCount}-youtube-url" placeholder="Enter YouTube URL" required>
-              <!-- You can add more fields or customize as needed -->
-              <input type="text" name="questions-${questionCount}-text" required>
-            </div>
-          `;
-        }
-
-        $("#questions-container").append(questionHtml);
-      });
+    document.getElementById("questionnaireForm").addEventListener("submit", function(event) {
+      var editUrlField = document.getElementsByName("edit_url")[0];
+      var replyUrlField = document.getElementsByName("reply_url")[0];
+      var urlError = document.getElementById("urlError");
+      var valid = true;
+  
+      if (!editUrlField.value.endsWith("edit")) {
+        urlError.textContent = '請輸入正確的編輯問卷網址';
+        urlError.style.display = 'block';
+        valid = false;
+      }
+  
+      if (!replyUrlField.value.includes("usp=pp_url&entry")) {
+        urlError.textContent = '請輸入正確的回覆問卷網址';
+        urlError.style.display = 'block';
+        valid = false;
+      }
+  
+      if (!valid) {
+        event.preventDefault();
+      } else {
+        urlError.style.display = 'none';
+      }
     });
   </script>
+
 {% endblock content %}

@@ -1,17 +1,67 @@
 {% extends 'layouts/base.html' %}
 {% block content %}
-  <div class="row">
-    <div class="col-sm-12">
-      <div class="card">
-        <div class="col-md-12">
-          <h3 class="mb-12">Edit Questionnaire</h3>
-          <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn btn-primary">Save Changes</button>
-          </form>
-        </div>
+<div class="row">
+  <div class="col-sm-12">
+    <div class="card">
+      <div class="col-md-12">
+        <h3>Edit Questionnaire</h3>
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <div id="questions-container">
+            {% for question in questions %}
+              <div class="question-container" id="question-container-{{ question.id }}">
+                <input type="hidden" name="questions-{{ question.id }}-id" value="{{ question.id }}">
+                <input type="hidden" name="questions-{{ question.id }}-delete" id="delete-question-{{ question.id }}" value="0">
+                <label for="questions-{{ forloop.counter0 }}-text">Question {{ forloop.counter }}:</label>
+                <input type="text" name="questions-{{ forloop.counter0 }}-text" value="{{ question.text }}" required>
+                {% if question.question_type == 'media' %}
+                  <label for="questions-{{ forloop.counter0 }}-media">Media URL:</label>
+                  <input type="url" name="questions-{{ forloop.counter0 }}-media" value="{{ question.media_content }}" required>
+                {% endif %}
+                <button type="button" class="delete-question-btn" data-question-id="{{ question.id }}">刪除</button>
+              </div>
+            {% endfor %}
+          </div>
+          <button type="button" class="add-text-question-btn">Add Text Question</button>
+          <button type="button" class="add-media-question-btn">Add Media Question</button>
+          <button type="submit">Save Changes</button>
+        </form>
       </div>
     </div>
   </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+  $(document).ready(function () {
+    // Function to initialize delete buttons for existing questions
+    $('.delete-question-btn').click(function () {
+      var questionId = $(this).data('question-id');
+      var deleteFlag = $(`input[name='question-${questionId}-delete']`);
+      deleteFlag.val('1');
+      $(this).closest('.question-container').hide();
+    });
+
+    function addQuestion(questionType) {
+      let questionCount = $('#questions-container').children().length;
+      let questionHtml = `
+        <div class="question-container">
+          <button type="button" class="delete-question-btn">刪除</button>
+          <label for="question-${questionCount}-text">${questionType === 'text' ? '文字問題' : '影音問題'}:</label>
+          <input type="text" name="question-${questionCount}-text" required>
+          ${questionType === 'media' ? `<input type="url" name="question-${questionCount}-media" required>` : ''}
+          <input type="hidden" name="question-${questionCount}-type" value="${questionType}">
+        </div>`;
+      $("#questions-container").append(questionHtml);
+    }
+
+    $('.add-text-question-btn').click(() => addQuestion('text'));
+    $('.add-media-question-btn').click(() => addQuestion('media'));
+
+    $(document).on('click', '.delete-question-btn', function () {
+      $(this).parent('.question-container').remove();
+    });
+  });
+</script>
 {% endblock content %}

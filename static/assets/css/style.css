@@ -145,6 +145,10 @@ strong {
   background: linear-gradient(-135deg, #de7e3a 0%, #d11616 100%);
 }
 
+.theme-bg4 {
+  background: linear-gradient(-135deg, #650c7b 0%, #3a3dde 100%);
+}
+
 /* ==========  card css start  =========== */
 .anim-rotate {
   -webkit-animation: anim-rotate 1s linear infinite;
