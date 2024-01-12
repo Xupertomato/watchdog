@@ -180,7 +180,6 @@ def get_form_data(form_url):
             'questions': questions
         }
 
-
     except Exception as e:
         print(f"Error retrieving form data: {e}")
         return None
