@@ -2,25 +2,28 @@
 
 {% block content %}
 <div class="container">
-    <h2>Answer List</h2>
+    <h2>{{ questionnaire.title }}</h2>
     <table class="table">
         <thead>
             <tr>
-                <th>Title</th>
-                <th>Response Data</th>
+                <th>Responses</th>
             </tr>
         </thead>
         <tbody>
             {% for answer in answers %}
             <tr>
-                <td>{{ answer.questionnaire.title }}</td>
                 <td>
-                    <!-- Assuming response_data is a dictionary or similar structure -->
-                    {% for key, value in answer.questions.items %}
-                    <strong>{{ key }}:</strong> {{ value }}<br>
-                    {% endfor %}
-                    {% for key, value in answer.response_data.items %}
-                    <strong>{{ key }}:</strong> {{ value }}<br>
+                    {% for response in answer.response_data %}
+                        <div class="response">
+                            {% for key, value in response.items %}
+                                <strong>{{ key }}:</strong> {{ value }}<br>
+                            {% endfor %}
+                        </div>
+                        {% if not forloop.last %}
+                            <hr> <!-- Separator for responses -->
+                        {% endif %}
+                    {% empty %}
+                        <p>No responses found.</p>
                     {% endfor %}
                 </td>
             </tr>
@@ -33,3 +36,8 @@
     </table>
 </div>
 {% endblock %}
+
+
+
+
+

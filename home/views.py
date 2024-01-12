@@ -193,10 +193,9 @@ def update_response_view(request):
           return redirect('google_oauth')
         
     form_id = request.GET.get('form_id', '')
-    print(form_id)
     if not form_id:
         # Handle the case where form_id is not provided
-        return redirect('questionnaire_list')
+        return redirect('pages/questionnaire_list.html')
       
     try:
       # Load credentials from the file
@@ -212,10 +211,11 @@ def update_response_view(request):
 
     except FileNotFoundError:
       print("No credentials found. Need to authenticate first.")
-      return None
+      return redirect('pages/questionnaire_list.html')
+    
     except KeyError:
       print("Error loading credentials. File format may be incorrect.")
-      return None
+      return redirect('pages/questionnaire_list.html')
 
     # Create a Google Forms service client using the credentials
     service = build('forms', 'v1', credentials=creds)
@@ -223,46 +223,51 @@ def update_response_view(request):
     try:
       # Extract the form ID from the URL and use it to fetch the form data
       responses = service.forms().responses().list(formId=form_id).execute()
-      print(responses)
       questionnaire = Questionnaire.objects.get(edit_url__contains=form_id)
       answer = Answer.objects.get(questionnaire=questionnaire)
-      answer.response_data = responses
+      processed_responses = process_form_responses(questionnaire.id, responses)
+      answer.response_data = processed_responses
       answer.save()  
 
     except Exception as e:
         print(f"Error retrieving form data: {e}")
-        return None
+        return redirect('questionnaire_list')
 
-    return render(request, 'pages/questionnaire_list.html')
+    return redirect(reverse('answer_list', kwargs={'pk': questionnaire.pk}))
 
  
 def process_form_responses(questionnaire_id, responses):
-  # Retrieve all usernames from the User model
-  usernames = set(User.objects.values_list('username', flat=True))
+    # Retrieve all usernames from the User model
+    usernames = set(User.objects.values_list('username', flat=True))
+    # Retrieve the Questionnaire and its related Answer object
+    answer = Answer.objects.get(questionnaire_id=questionnaire_id)
 
-  # Retrieve the Questionnaire and its related Answer object
-  answer = Answer.objects.get(questionnaire_id=questionnaire_id)
+    # Find the question ID for the username question
+    username_question_id = next((key for key, value in answer.questions.items() if value.lower() == "username"), None)
 
-  # Find the question ID for the username question
-  username_question_id = next((key for key, value in answer.questions.items() if value == "username"), None)
-  if not username_question_id:
-      print("Username question ID not found.")
-      return
-    
-  # Process each response
-  for response in responses:
-      # Extract the response data
-      response_data = response.get('answers', {})
+    if not username_question_id:
+        print("Username question ID not found.")
+        return []
 
-      # Check if the username exists in the database
-      username_response = response_data.get(username_question_id, {}).get('textAnswers', {}).get('answers', [{}])[0].get('value', '')
-      
-      if username_response in usernames:
-          # Process and save valid responses
-          mapped_response = {}
-          for question_id, title in answer.response_data.items():
-              question_response = response_data.get(question_id, {}).get('textAnswers', {}).get('answers', [{}])[0].get('value', '')
-              mapped_response[title] = question_response 
+    processed_responses = []
+
+    # Process each response
+    for response in responses.get('responses', []):
+        # Extract the response data
+        response_data = response.get('answers', {})
+        
+        # Check if the username exists in the database
+        username_response = response_data.get(username_question_id, {}).get('textAnswers', {}).get('answers', [{}])[0].get('value', '')
+
+        if username_response in usernames:
+
+            processed_response = {}
+            for question_id, title in answer.questions.items():
+                question_response = response_data.get(question_id, {}).get('textAnswers', {}).get('answers', [{}])[0].get('value', '')
+                processed_response[title] = question_response
+            processed_responses.append(processed_response)
+
+    return processed_responses
 
 
 @login_required(login_url='/accounts/login/')

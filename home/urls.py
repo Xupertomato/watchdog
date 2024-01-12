@@ -60,7 +60,6 @@ urlpatterns = [
   path('edit_questionnaire/<int:pk>/', views.edit_questionnaire_view, name='edit_questionnaire'),
   path('delete_questionnaire/<int:pk>/', views.delete_questionnaire_view, name='delete_questionnaire'),
   path('answer_list/<int:pk>/', views.answer_list_view, name='answer_list'),
-
   path('google-oauth/', views.redirect_to_google_oauth, name='google_oauth'),
   path('oauth2callback/', views.oauth2callback, name='oauth_callback'),
 ]
