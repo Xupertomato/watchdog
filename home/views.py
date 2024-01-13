@@ -21,7 +21,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 import json
 from django.conf import settings
-from django.http import HttpResponseRedirect
 from google.auth.transport.requests import Request
 from httplib2 import Http
 from google.oauth2.credentials import Credentials
@@ -236,8 +235,9 @@ def update_response_view(request):
 
  
 def process_form_responses(questionnaire_id, responses):
-    # Retrieve all usernames from the User model
-    usernames = set(User.objects.values_list('username', flat=True))
+    # Retrieve all user_hashes and their corresponding usernames from the User model
+    user_hash_to_username = {user_hash: username for username, user_hash in User.objects.values_list('username', 'user_hash')}
+
     # Retrieve the Questionnaire and its related Answer object
     answer = Answer.objects.get(questionnaire_id=questionnaire_id)
 
@@ -255,15 +255,22 @@ def process_form_responses(questionnaire_id, responses):
         # Extract the response data
         response_data = response.get('answers', {})
         
-        # Check if the username exists in the database
-        username_response = response_data.get(username_question_id, {}).get('textAnswers', {}).get('answers', [{}])[0].get('value', '')
+        # Extract the user_hash (username in response data)
+        user_hash_response = response_data.get(username_question_id, {}).get('textAnswers', {}).get('answers', [{}])[0].get('value', '')
 
-        if username_response in usernames:
+        # Check if the user_hash exists in the database and retrieve the corresponding username
+        if user_hash_response in user_hash_to_username:
+            username = user_hash_to_username[user_hash_response]
 
             processed_response = {}
             for question_id, title in answer.questions.items():
                 question_response = response_data.get(question_id, {}).get('textAnswers', {}).get('answers', [{}])[0].get('value', '')
-                processed_response[title] = question_response
+
+                # Replace user_hash with the actual username in the processed response
+                if title.lower() == 'username':
+                    processed_response[title] = username
+                else:
+                    processed_response[title] = question_response
             processed_responses.append(processed_response)
 
     return processed_responses
@@ -309,11 +316,27 @@ def delete_questionnaire_view(request, pk):
 
     return render(request, 'pages/delete_questionnaire_confirm.html', {'questionnaire': questionnaire})
 
-@user_passes_test(lambda u: u.is_superuser, login_url='/accounts/login/') 
+@user_passes_test(lambda u: u.is_superuser, login_url='/accounts/login/')
 def answer_list_view(request, pk):
     questionnaire = get_object_or_404(Questionnaire, pk=pk)
-    answers = Answer.objects.filter(questionnaire=questionnaire)  # Fetch answers for this questionnaire
-    return render(request, 'pages/answer_list.html', {'answers': answers, 'questionnaire': questionnaire})  
+    answers = Answer.objects.filter(questionnaire=questionnaire)
+    return render(request, 'pages/answer_list.html', {'answers': answers, 'questionnaire': questionnaire})
+
+  
+@login_required(login_url='/accounts/login/')
+def answer_history(request, pk, username):
+    viewed_user = get_object_or_404(User, username=username)
+    questionnaire = get_object_or_404(Questionnaire, pk=pk)
+
+    try:
+        answer = Answer.objects.get(questionnaire=questionnaire)
+        # Filter the response_data to get only those responses where 'username' matches the viewed_user's username
+        filtered_responses = [response for response in answer.response_data if response.get('username') == viewed_user.username]
+    except Answer.DoesNotExist:
+        filtered_responses = []
+
+    return render(request, 'pages/answer_history.html', {'questionnaire': questionnaire, 'responses': filtered_responses, 'viewed_user': viewed_user})
+
   
 # Authentication
 class UserRegistrationView(CreateView):
@@ -369,23 +392,29 @@ def logout_view(request):
 @login_required(login_url='/accounts/login/') 
 def profile_page(request, username):
     user = get_object_or_404(User, username=username)
-    return render(request, 'pages/profile.html', {'user': user})
+    all_answers = Answer.objects.all()
+    answers = [answer for answer in all_answers if any(user.username == response.get('username') for response in answer.response_data)]
+
+    return render(request, 'pages/profile.html', {'user': user, 'answers': answers})
+
 
 @login_required(login_url='/accounts/login/')
 def edit_profile(request, username):
+    edit_user = get_object_or_404(User, username=username)  # Use a different variable name to avoid confusion
+
     if request.method == 'POST':
-        user = get_object_or_404(User, username=username)  # noqa: F405
-        form = UserUpdateForm(request.POST, request.FILES, instance=user)
+        form = UserUpdateForm(request.POST, request.FILES, instance=edit_user)
         if form.is_valid():
             form.save()
             messages.success(request, f'成功更新個人資料！')
-            return redirect('profile')
+            return redirect('profile_page', username=username)
             
     else:
-        form = UserUpdateForm(instance=request.user)
+        form = UserUpdateForm(instance=edit_user)
 
-    context = {'form': form}
+    context = {'form': form, 'edit_user': edit_user}  # Pass the specific user being edited
     return render(request, 'pages/profile_edit.html', context)
+
 
 class ElderRecordUploadView(FormView):
   template_name='add_record.html'

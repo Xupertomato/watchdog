@@ -11,6 +11,7 @@
           </div>
           <thead>
             <tr>
+              <th></th> 
               <th>標題</th>
               <th>發布時間</th>
               <th>動作</th>
@@ -19,12 +20,13 @@
           </thead>
           <tbody>
             {% for questionnaire in questionnaires %}
-            <tr class="unread">
+            <tr class="title">
+              <td>{{ forloop.counter }}</td> 
               <td>
                 <h6 class="mb-1">{{ questionnaire.title }}</h6>
               </td>
               <td>
-                <h6 class="text-muted"><i class="fas fa-circle text-c-blue f-10 m-r-30"></i>{{ questionnaire.assigned_at }}</h6>
+                <h6 class="assign-at"><i class="fas fa-circle text-c-blue f-10 m-r-30"></i>{{ questionnaire.assigned_at }}</h6>
               </td>
               <td>
                 <a href="{{ questionnaire.reply_url }}={{ user.user_hash }}" class="label theme-bg text-white f-14">作答</a>
@@ -32,7 +34,6 @@
                 <a href="{{ questionnaire.edit_url }}" target="_blank" class="label theme-bg2 text-white f-14">編輯</a>
                 <a href="{% url 'delete_questionnaire' pk=questionnaire.pk %}" class="label theme-bg3 text-white f-14">刪除</a>
                 <a href="#" data-edit-url="{{ questionnaire.edit_url }}" class="update-response label theme-bg4 text-white f-14">更新回覆</a>
-                <a href="{% url 'answer_list' pk=questionnaire.pk %}" class="label theme-bg4 text-white f-14">查看回覆</a>
                 {% endif %}
               </td>
             </tr>
@@ -43,7 +44,6 @@
     </div>
   </div>
 </div>
-
 <script>
   document.querySelectorAll('.update-response').forEach(function(link) {
       link.addEventListener('click', function(e) {
@@ -55,5 +55,4 @@
       });
   });
 </script>
-
-{% endblock content %}
+{% endblock content %}   

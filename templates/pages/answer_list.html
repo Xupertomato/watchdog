@@ -1,43 +1,55 @@
 {% extends 'layouts/base.html' %}
 
 {% block content %}
+<div class="card Response">
 <div class="container">
+  <div class="card-block px-0 py-3">
+    <div class="table-responsive">
     <h2>{{ questionnaire.title }}</h2>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Responses</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for answer in answers %}
-            <tr>
-                <td>
-                    {% for response in answer.response_data %}
-                        <div class="response">
-                            {% for key, value in response.items %}
-                                <strong>{{ key }}:</strong> {{ value }}<br>
-                            {% endfor %}
-                        </div>
-                        {% if not forloop.last %}
-                            <hr> <!-- Separator for responses -->
-                        {% endif %}
-                    {% empty %}
-                        <p>No responses found.</p>
-                    {% endfor %}
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="2">No answers found.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    {% if answers %}
+        {% for answer in answers %}
+            {% if answer.response_data %}
+                {% for response in answer.response_data %}
+                    {% if forloop.first %} <!-- Check if it's the first response to set up table headers -->
+                        <table class="table table-hover"> <!-- Added table-hover class here -->
+                            <thead>
+                                <tr>
+                                    <th>#</th> <!-- Numbering Column -->
+                                    <th>Username</th> <!-- Username Column -->
+                                    {% for key in response.keys %}
+                                        {% if key != "username" %}
+                                            <th>{{ key }}</th>
+                                        {% endif %}
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                    {% endif %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td> <!-- Display row number -->
+                        <td>{{ response.username }}</td> <!-- Display username -->
+                        {% for key, value in response.items %}
+                            {% if key != "username" %}
+                                <td>{{ value }}</td>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                    {% if forloop.last %}
+                            </tbody>
+                        </table>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <p>No responses found for this answer.</p>
+            {% endif %}
+        {% empty %}
+            <p>No answers found for this questionnaire.</p>
+        {% endfor %}
+    {% else %}
+        <p>No answers available.</p>
+    {% endif %}
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
-
-
-
-
-

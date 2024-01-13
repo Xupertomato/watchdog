@@ -12,7 +12,7 @@
     <div class="col-sm">
       <div class="card">
         <div class="card-header">
-          <h3>{{ user.name }}'s Profile</h3>
+          <h3>{{ user.name }}的個人資料</h3>
         </div>
         <div class="card-block">
           <div class="row">
@@ -20,7 +20,7 @@
               <!-- Display profile image on the left -->
               <div class="w-50 p-3">
                 {% if user.upload_profile %}
-                <img src="{{ MEDIA_URL }}Profile/{{ request.user.username }}/{{ request.user.username }}.jpg" alt="profile image" class="img-fluid" style="box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);" height="200" width="200">{% else %}
+                <img src="{{ MEDIA_URL }}Profile/{{ user.username }}/{{ user.username }}.jpg" alt="profile image" class="img-fluid" style="box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);" height="200" width="200">{% else %}
                   <!-- Default profile image or placeholder -->
                   <img src="{% static 'images/default_profile.jpg' %}" alt="default profile image" class="img-fluid" style="box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);" height="200" width="200">
                 {% endif %}
@@ -43,5 +43,35 @@
       </div>
     </div>
   </div>
+  <div class="card">
+    <div class="card-header">
+        <h3>{{ user.name }}'s Questionnaire Responses</h3>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Questionnaire Title</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for answer in answers %}
+                <tr>
+                    <td>{{ answer.questionnaire.title }}</td>
+                    <td>
+                      <a href="{% url 'answer_history' pk=answer.questionnaire.pk username=user.username %}"  class="btn btn-primary mt-3">View History</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="2">No questionnaires answered yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
   <!-- [ Main Content ] end -->
 {% endblock content %}
