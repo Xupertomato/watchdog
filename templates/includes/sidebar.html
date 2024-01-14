@@ -89,7 +89,7 @@
           <label>長者相關</label>
         </li>
         <li data-username="Add record" class="nav-item {% if 'add_record' in segment %}active{% endif %}"><a href="{% url 'add_record' %}" class="nav-link"><span
-          class="pcoded-micon"><i class="feather icon-sidebar"></i></span><span class="pcoded-mtext">新增長者紀錄</span></a>
+          class="pcoded-micon"><i class="feather icon-upload"></i></span><span class="pcoded-mtext">新增長者紀錄</span></a>
         </li>
         {% if request.user.type == 'ELDER' %}
         <li data-username="Table bootstrap datatable footable" class="nav-item {% if 'basic_tables' in segment %}active{% endif %}">
@@ -99,35 +99,24 @@
         {% endif %}
         {% if not request.user.type == 'ELDER' %}
         <li data-username="View elder list" class="nav-item {% if 'add_record' in segment %}active{% endif %}"><a href="{% url 'elder_list' %}" class="nav-link"><span
-          class="pcoded-micon"><i class="feather icon-sidebar"></i></span><span class="pcoded-mtext">查看照護長者</span></a>
+          class="pcoded-micon"><i class="feather icon-users"></i></span><span class="pcoded-mtext">查看照護長者</span></a>
         </li>
         <li data-username="Elder register" class="nav-item {% if 'form_elements' in segment %}active{% endif %}">
           <a href="{% url 'elder_register' %}" class="nav-link "><span class="pcoded-micon"><i 
-                class="feather icon-file-text"></i></span><span class="pcoded-mtext">新增照護長者</span></a>
+                class="feather icon-user-plus"></i></span><span class="pcoded-mtext">新增照護長者</span></a>
         </li>
         {% endif %}
-        <!-- <li class="nav-item pcoded-menu-caption">
-          <label>Chart & Maps</label>
-        </li>
-        <li data-username="Charts Morris" class="nav-item {% if 'morris_chart' in segment %}active{% endif %}"><a href="{% url 'morris_chart' %}" class="nav-link "><span
-              class="pcoded-micon"><i class="feather icon-pie-chart"></i></span><span
-              class="pcoded-mtext">Chart</span></a>
-        </li> -->
-        <!-- <li data-username="Maps Google" class="nav-item {% if 'google_maps' in segment %}active{% endif %}"><a href="{% url 'google_maps' %}" class="nav-link "><span
-              class="pcoded-micon"><i class="feather icon-map"></i></span><span class="pcoded-mtext">Maps</span></a>
-        </li> -->
+        
         <li class="nav-item pcoded-menu-caption">
           <label>問卷</label>
         </li>        
         
         <li data-username="Manager Authentication" class="nav-item {% if 'form_elements' in segment %}active{% endif %}">
           <a href="{% url 'questionnaire_list' %}" class="nav-link "><span class="pcoded-micon"><i
-            class="feather icon-edit"></i></span><span class="pcoded-mtext">進行中的問卷</span></a>
+            class="feather icon-list"></i></span><span class="pcoded-mtext">進行中的問卷</span></a>
           {% if request.user.is_superuser %}
           <a href="{% url 'add_questionnaire' %}" class="nav-link "><span class="pcoded-micon"><i
-                class="feather icon-edit"></i></span><span class="pcoded-mtext">新增問卷</span></a>
-          <a href="{% url 'add_questionnaire' %}" class="nav-link "><span class="pcoded-micon"><i
-            class="feather icon-edit"></i></span><span class="pcoded-mtext">問卷歷史紀錄</span></a> 
+                class="feather icon-file-plus"></i></span><span class="pcoded-mtext">新增問卷</span></a>
           {% endif %}
 
           <li class="nav-item pcoded-menu-caption">
@@ -136,23 +125,12 @@
           <li data-username="Manager Authentication" class="nav-item {% if 'form_elements' in segment %}active{% endif %}">
             {% if request.user.is_superuser %}
             <a href="{% url 'register' %}" class="nav-link "><span class="pcoded-micon"><i
-                class="feather icon-edit"></i></span><span class="pcoded-mtext">新增使用者</span></a> 
+                class="feather icon-user-plus"></i></span><span class="pcoded-mtext">新增使用者</span></a> 
             {% endif %}  
           <a href="{% url 'login' %}" class="nav-link "><span class="pcoded-micon"><i
             class="feather icon-unlock"></i></span><span class="pcoded-mtext">登入其他帳號</span></a>
         </li>
-        <!-- <li data-username="Profile Page" class="nav-item {% if 'profile' in segment %}active{% endif %}"><a href="{% url 'profile' %}" class="nav-link"><span
-              class="pcoded-micon"><i class="feather icon-user"></i></span><span class="pcoded-mtext">Profile
-              Page</span></a>
-        </li> -->
-        <!-- <li data-username="Sample Page" class="nav-item {% if 'sample_page' in segment %}active{% endif %}"><a href="{% url 'sample_page' %}" class="nav-link"><span
-              class="pcoded-micon"><i class="feather icon-sidebar"></i></span><span class="pcoded-mtext">Sample
-              page</span></a>
-        </li>  -->
-        <!-- <li data-username="Disabled Menu" class="nav-item disabled"><a href="javascript:" class="nav-link"><span
-              class="pcoded-micon"><i class="feather icon-power"></i></span><span class="pcoded-mtext">Disabled
-              menu</span></a>
-        </li> -->
+        
         {% endif %}
       </ul>
     </div>

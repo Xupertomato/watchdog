@@ -8,7 +8,7 @@
 
         <!-- [ Manager Elders List ] start -->
         <div class="col-xl-12">
-            <div class="card">
+            <div class="card Recent-Users">
                 <div class="card-header">
                     <h5>長者列表</h5>
                 </div>
@@ -18,7 +18,7 @@
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th>#</th>
+                                        <th></th>
                                         <th>身份證字號</th>
                                         <th>姓名</th>
                                         <th>性別</th>
@@ -40,7 +40,7 @@
                                             <td>{{ elder.birthday }}</td>
                                             <td>{{ elder.address }}</td>
                                             <td>
-                                              <a href="{% url 'profile' elder.username %}" class="btn btn-primary btn-sm">前往頁面</a>
+                                              <a href="{% url 'profile' elder.username %}" class="label theme-bg text-white f-14">前往頁面</a>
                                           </td>
                                            <!-- Button to the specific elder's record -->
                                             <!-- Add more fields as needed -->

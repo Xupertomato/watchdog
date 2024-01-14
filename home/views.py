@@ -252,34 +252,41 @@ def process_form_responses(questionnaire_id, responses):
 
     # Process each response
     for response in responses.get('responses', []):
-        # Extract the response data
         response_data = response.get('answers', {})
-        
-        # Extract the user_hash (username in response data)
         user_hash_response = response_data.get(username_question_id, {}).get('textAnswers', {}).get('answers', [{}])[0].get('value', '')
 
-        # Check if the user_hash exists in the database and retrieve the corresponding username
         if user_hash_response in user_hash_to_username:
             username = user_hash_to_username[user_hash_response]
 
             processed_response = {}
             for question_id, title in answer.questions.items():
-                question_response = response_data.get(question_id, {}).get('textAnswers', {}).get('answers', [{}])[0].get('value', '')
-
-                # Replace user_hash with the actual username in the processed response
-                if title.lower() == 'username':
-                    processed_response[title] = username
+                # Handle file upload answers separately
+                if 'fileUploadAnswers' in response_data.get(question_id, {}):
+                    file_id = response_data[question_id]['fileUploadAnswers']['answers'][0]['fileId']
+                    file_url = f"https://drive.google.com/open?id={file_id}"
+                    processed_response[title] = file_url
                 else:
-                    processed_response[title] = question_response
+                    # Handle other types of answers
+                    question_response = response_data.get(question_id, {}).get('textAnswers', {}).get('answers', [{}])[0].get('value', '')
+                    if title.lower() == 'username':
+                        processed_response[title] = username
+                    else:
+                        processed_response[title] = question_response
             processed_responses.append(processed_response)
 
     return processed_responses
 
 
+
 @login_required(login_url='/accounts/login/')
 def questionnaire_list_view(request):
     questionnaires = Questionnaire.objects.all()
-    return render(request, 'pages/questionnaire_list.html', {'questionnaires': questionnaires})
+    context = {
+    'segment': '進行中的問卷',
+    'questionnaires': questionnaires
+    }
+    
+    return render(request, 'pages/questionnaire_list.html', context)
 
 @login_required(login_url='/accounts/login/')
 def edit_questionnaire_view(request, pk):

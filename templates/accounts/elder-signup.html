@@ -26,43 +26,26 @@
                         <span class="text-danger d-block text-left">{{ field.errors }}</span>
                     {% endfor %}
                     <div class="form-group text-left">使用者照片：
-                                <label class="btn btn-primary ">
-                                    <input id="upload_profile" style="display:none;" type="file" name="upload_profile">
-                                    <i class="fa fa-photo"></i>選擇照片
-                                </label>
-                                <span class="text-danger d-block text-left">{{ form.upload_profile.errors }}</span>
-                            </div>
-                    {% for field in form %}
-                        {% if field.name == 'related_users' %}
-                        <div class="form-group text-left">
-                            <br>
-                            <h4 class="form-label">選擇關聯管理者</h4>
-                            {{ field }} 
-                        </div>
-                        {% endif %}
-                    {% endfor %}
-                    <div class="form-group text-left mt-4">
-                        <div class="checkbox checkbox-fill d-inline">
-                            <input type="checkbox" name="checkbox-fill-1" id="checkbox-fill-1" checked="">
-                            <label for="checkbox-fill-1" class="cr"> Save Details</label>
-                        </div>
+                        <label class="btn btn-primary ">
+                            <input id="upload_profile" style="display:none;" type="file" name="upload_profile">
+                            <i class="fa fa-photo"></i>選擇照片
+                        </label>
+                        <span class="text-danger d-block text-left">{{ form.upload_profile.errors }}</span>
                     </div>
-                    <!-- <div class="form-group text-left">
-                        <div class="checkbox checkbox-fill d-inline">
-                            <input type="checkbox" name="checkbox-fill-2" id="checkbox-fill-2">
-                            <label for="checkbox-fill-2" class="cr">Send me the <a href="#!"> Newsletter</a> weekly.</label>
+                    <div class="form-group text-left">
+                        <div class="nav-item dropdown">
+                          <a class="dropdown-toggle" href="javascript:" data-toggle="dropdown" id="relatedUsersDropdown">選擇關聯使用者</a>
+                          <ul class="dropdown-menu" aria-labelledby="relatedUsersDropdown">
+                            {% for field in form.related_users %}
+                              <li><a class="dropdown-item" href="javascript:">{{field}}</a></li>
+                            {% endfor %}
+                          </ul>
                         </div>
-                    </div> -->
+                    </div>                    
                     <button type="submit" class="btn btn-primary shadow-2 mb-4">註冊</button>
                 </form>
             </div>
         </div>
     </div>
-
-
-    <label class="d-none">
-        <i class="icon feather icon-sun" id="theme-indicator"></i>
-        <input type="checkbox" id="theme-switch" class="d-none">
-    </label>
-
+   
 {% endblock content %}

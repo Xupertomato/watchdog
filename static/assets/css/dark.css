@@ -21,6 +21,9 @@ body.dark {
     color: white; }
   body.dark .pcoded-header .dropdown .dropdown-menu {
     background-color: #2C394B; }
+/* Change the background color of the dropdown menu in dark mode */
+  body.dark .dropdown-menu {
+  background-color: #2C394B;}
   body.dark .pcoded-header .dropdown.show:before {
     color: #2C394B; }
   body.dark .pcoded-header .dropdown .profile-notification .pro-head {

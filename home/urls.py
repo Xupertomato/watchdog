@@ -23,10 +23,6 @@ urlpatterns = [
   path('tables/elder_record/', ElderRecordViewView.as_view(), name='elder_record'),
   path('elder-list/', ElderListView.as_view(), name='elder_list'),
 
-  # Chart and Maps
-  # path('charts/morris-chart/', views.morris_chart, name='morris_chart'),
-  # path('maps/google-maps/', views.google_maps, name='google_maps'),
-
   # Authentication
   path('accounts/register/', views.UserRegistrationView.as_view(), name='register'),
   path('accounts/elder-register/', views.ElderRegistrationView.as_view(), name='elder_register'),

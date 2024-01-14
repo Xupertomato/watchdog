@@ -2,7 +2,12 @@
 {% load static %}
 
 {% block content %}
-
+<style>
+  /* Change the background color of the select2 dropdown */
+  .select2-container--default .select2-results__option {
+      background-color: #2c3034;
+  }
+</style>
   <!-- [ Main Content ] start -->
   <div class="row">
     <div class="col-sm-12">
@@ -33,7 +38,6 @@
                     <span aria-hidden="true">&times;</span>
                   </button>
                 </div>
-              
                 {% endif %}
                 <div class="form-group">
                   <label>請在下方選擇要上傳的檔案(一次最多只能選擇10個檔案)</label><br>
@@ -41,19 +45,12 @@
                 </div>
                 <div class="form-group">
                   <label for="tagSelect">長者標籤(請選擇有出現在檔案中的長者)</label>
-                  {% for user in users%}
-                    <div class="form-check">
-                      <input class="form-check-input" type="checkbox" name="taggedElder" value="{{ user.id }}" id="{{ user.username }}">
-                      <label class="form-check-label" for="{{ user.username }}">
-                        {{ user.username }}
-                      </label>
-                    </div>
-                  {% endfor %}
+                    <select class="form-control select2" name="taggedElder" id="tagSelect" multiple>
+                      {% for user in users %}
+                        <option value="{{ user.id }}">{{ user.username }}</option>
+                      {% endfor %}
+                    </select>
                 </div>
-                <!-- <div class="form-group">
-                  <label>影像日期</label>
-                  <input type="date" class="form-control" name="dateTimeOfUpload">
-                </div> -->
                 <button type="submit" class="btn btn-primary">送出</button>
               </form>
             </div>

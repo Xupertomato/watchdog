@@ -222,12 +222,20 @@ class ElderRecordForm(forms.ModelForm):
         return elder_records
 
 class QuestionnaireForm(forms.ModelForm):
+
     class Meta:
         model = Questionnaire
         fields = ['edit_url', 'reply_url', 'assigned_by', 'assigned_at']
         widgets = {
-            'assigned_at': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'edit_url': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '編輯問卷網址'}),
+            'reply_url': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '回覆問卷網址'}),
+            'assigned_by': forms.Select(attrs={'class': 'form-control'}),
+            'assigned_at': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super(QuestionnaireForm, self).__init__(*args, **kwargs)
+        self.fields['assigned_by'].queryset = User.objects.filter(is_superuser=True)
 
     def clean_edit_url(self):
         edit_url = self.cleaned_data.get("edit_url")
