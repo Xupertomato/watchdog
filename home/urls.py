@@ -33,7 +33,7 @@ urlpatterns = [
   path('accounts/password-change-done/', auth_views.PasswordChangeDoneView.as_view(
       template_name='accounts/auth-password-change-done.html'
   ), name="password_change_done"),
-
+  path('search/', views.elder_search_view, name='elder_search_view'),  
   path('accounts/password-reset/', views.UserPasswordResetView.as_view(), name='password_reset'),
   path('accounts/password-reset-confirm/<uidb64>/<token>/',
     views.UserPasswrodResetConfirmView.as_view(), name="password_reset_confirm"
@@ -57,6 +57,8 @@ urlpatterns = [
   path('delete_questionnaire/<int:pk>/', views.delete_questionnaire_view, name='delete_questionnaire'),
   path('answer_list/<int:pk>/', views.answer_list_view, name='answer_list'),
   path('answer_history/<int:pk>/<str:username>/', views.answer_history, name='answer_history'),
+  
+  
   path('google-oauth/', views.redirect_to_google_oauth, name='google_oauth'),
   path('oauth2callback/', views.oauth2callback, name='oauth_callback'),
 ]

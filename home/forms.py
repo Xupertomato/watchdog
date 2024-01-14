@@ -19,7 +19,7 @@ class RegistrationForm(UserCreationForm):
       widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': '請再次輸入密碼'}),
         )     
     type = forms.ChoiceField(
-        choices=[(choice[0], choice[1]) for choice in User.Types.choices if choice[0] != 'ADMIN'],
+        choices=[(choice[0], choice[1]) for choice in User.Types.choices],
         widget=forms.Select(attrs={'class': 'form-control', 'placeholder': '身份'}),
         )
     class Meta:

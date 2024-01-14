@@ -2,15 +2,26 @@
 {% load static %}
 
 {% block content %}
-
     <!-- [ Main Content ] start -->
     <div class="row">
-
-        <!-- [ Manager Elders List ] start -->
         <div class="col-xl-12">
+            <div class="row">
+                <div class="col-xl-12">
             <div class="card Recent-Users">
-                <div class="card-header">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h5>長者列表</h5>
+                    <!-- [ Search Bar ] start -->
+                    <form method="get" action="{% url 'elder_search_view' %}"> <!-- Update with the name of your search view -->
+                        <div class="input-group mb-3">
+                            <input type="text" name="username" class="form-control" placeholder="Search by username . . .">
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="feather icon-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    <!-- [ Search Bar ] end -->
                 </div>
                 <div class="card-block table-border-style">
                     <div class="table-responsive">
@@ -25,7 +36,7 @@
                                         <th>電話</th>
                                         <th>生日</th>
                                         <th>地址</th>
-                                        <th>個人頁面</th> <!-- New column for the button -->
+                                        <th>個人頁面</th> 
                                         <!-- Add more fields as needed -->
                                     </tr>
                                 </thead>

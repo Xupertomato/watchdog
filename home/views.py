@@ -413,8 +413,7 @@ def edit_profile(request, username):
         form = UserUpdateForm(request.POST, request.FILES, instance=edit_user)
         if form.is_valid():
             form.save()
-            messages.success(request, f'成功更新個人資料！')
-            return redirect('profile_page', username=username)
+            return redirect(profile_page, username=edit_user.username)
             
     else:
         form = UserUpdateForm(instance=edit_user)
@@ -434,7 +433,6 @@ class ElderRecordUploadView(FormView):
           form = ElderRecordForm(request.POST, request.FILES, request=request)
           if form.is_valid():
               form.save()
-              messages.success(request, '成功上傳！')
               return redirect('/forms/upload_elder_record/')
           else:
               messages.error(request, '上傳失敗！')
@@ -470,7 +468,20 @@ class ElderListView(LoginRequiredMixin, ListView):
           elders_managed.extend(relationship.elders.all())
 
       return elders_managed
-          
+    
+def elder_search_view(request):
+    query = request.GET.get('username', '')
+    if query:
+        # Filter your queryset based on the search query
+        queryset = Elder.objects.filter(username__icontains=query)
+    else:
+        queryset = Elder.objects.all()  # Or however you normally retrieve the data
+
+    context = {
+        'relationship': queryset
+    }
+    return render(request, 'pages/elder_list.html', context)
+         
 @method_decorator(login_required, name='dispatch')
 class ElderRecordDetailView(DetailView):
     model = ElderRecord
