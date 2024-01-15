@@ -1,0 +1,43 @@
+asgiref==3.7.2
+cachetools==5.3.2
+certifi==2023.11.17
+charset-normalizer==3.3.2
+Django==5.0
+django-admin-datta==1.0.10
+django-cors-headers @ file:///home/conda/feedstock_root/build_artifacts/django-cors-headers_1699990178824/work
+django-extensions==3.2.3
+django-multiupload==0.6.1
+google-api-core==2.15.0
+google-api-python-client==2.111.0
+google-auth==2.25.2
+google-auth-httplib2==0.2.0
+google-auth-oauthlib==1.2.0
+googleapis-common-protos==1.62.0
+graphviz==0.20.1
+httplib2==0.22.0
+idna==3.6
+ngrok==0.12.1
+oauth2client==4.1.3
+oauthlib==3.2.2
+protobuf==4.25.1
+psycopg==3.1.17
+psycopg2-binary==2.9.9
+pyasn1==0.5.1
+pyasn1-modules==0.3.0
+pydot==2.0.0
+pygraphviz==1.12
+pyngrok @ file:///home/conda/feedstock_root/build_artifacts/pyngrok_1701708037702/work
+pyparsing==3.1.1
+python-dateutil==2.8.2
+python-dotenv==1.0.0
+pytz==2023.3.post1
+PyYAML @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_a8_sdgulmz/croot/pyyaml_1698096054705/work
+requests==2.31.0
+requests-oauthlib==1.3.1
+rsa==4.9
+six==1.16.0
+sqlparse @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_73ubbfcjni/croot/sqlparse_1668793445223/work
+typing_extensions==4.9.0
+uritemplate==4.1.1
+urllib3==2.1.0
+whitenoise==6.5.0
