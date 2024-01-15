@@ -14,10 +14,11 @@
                   <table class="table table-hover">
                     <thead>
                       <tr>
-                        <th>#</th>
+                        <th></th>
+                        <th>上傳時間</th> 
                         <th>Username</th>
                         {% for key in response.keys %}
-                          {% if key != "username" %}
+                          {% if key != "上傳時間" and key != "username" %}
                             <th>{{ key }}</th>
                           {% endif %}
                         {% endfor %}
@@ -27,11 +28,12 @@
                 {% endif %}
                 <tr>
                   <td>{{ forloop.counter }}</td>
+                  <td>{{ response.上傳時間}}</td> 
                   <td>{{ response.username }}</td>
                   {% for key, value in response.items %}
-                    {% if key != "username" %}
+                    {% if key != "上傳時間" and key != "username" %}
                       <td>
-                        {% if value|slice:":4" == "http" %} <!-- Check if the value is a URL -->
+                        {% if value|slice:":4" == "http" %}
                           <a href="{{ value }}" target="_blank" class="label theme-bg text-white f-14">前往檔案</a>
                         {% else %}
                           {{ value }}

@@ -29,7 +29,7 @@
                 <h6 class="assign-at"><i class="fas fa-circle text-c-blue f-10 m-r-30"></i>{{ questionnaire.assigned_at }}</h6>
               </td>
               <td>
-                <a href="{{ questionnaire.reply_url }}={{ user.user_hash }}" class="label theme-bg text-white f-14">作答</a>
+                <a href="{{ questionnaire.reply_url }}={{ user.user_hash }}" target="_blank" class="label theme-bg text-white f-14">作答</a>
                 {% if user.type == 'ADMIN' %}
                 <a href="{{ questionnaire.edit_url }}" target="_blank" class="label theme-bg2 text-white f-14">編輯</a>
                 <a href="{% url 'delete_questionnaire' pk=questionnaire.pk %}" class="label theme-bg3 text-white f-14">刪除</a>

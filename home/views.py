@@ -27,6 +27,8 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from django.http import HttpResponse
+from datetime import datetime
+import pytz
 
 
 
@@ -36,316 +38,8 @@ def index(request):
   }
   return render(request, "pages/index.html", context)
 
-# Forms and Tables
-@login_required(login_url='/accounts/login/')
-def add_users(request):
-  context = {
-    'parent': 'form_components',
-    'segment': 'add_users'
-  }
-  return render(request, 'pages/add_users.html', context)
 
-@login_required(login_url='/accounts/login/')
-def basic_tables(request):
-  context = {
-    'parent': 'tables',
-    'segment': 'elder_data'
-  }
-  return render(request, 'pages/elder_data.html', context)
-
-
-#問卷相關
-
-@user_passes_test(lambda u: u.is_superuser, login_url='/accounts/login/')  
-def redirect_to_google_oauth(request):
-    flow = Flow.from_client_secrets_file(
-        settings.GOOGLE_FORM_CLIENT_SECRETS_PATH,
-        scopes=[settings.SCOPES],
-        redirect_uri=request.build_absolute_uri('/oauth2callback/')
-    )
-
-    authorization_url, state = flow.authorization_url(
-        access_type='offline',
-        include_granted_scopes='true',
-        prompt='consent'
-    )
-
-    # Store the state in the session for later use
-    request.session['state'] = state
-
-    return redirect(authorization_url)
-  
-def oauth2callback(request):
-    state = request.session.get('state')
-
-
-    flow = Flow.from_client_secrets_file(
-        settings.GOOGLE_FORM_CLIENT_SECRETS_PATH,
-        scopes=settings.SCOPES,
-        state=state,
-        redirect_uri=request.build_absolute_uri('/oauth2callback/')
-    )
-
-    try:
-        # Fetch token with the correct scopes
-        flow.fetch_token(authorization_response=request.build_absolute_uri())
-
-        credentials = flow.credentials
-        # Save credentials with both scopes
-        with open(settings.GOOGLE_FORM_TOKEN_PATH, 'w') as token_file:
-            token_file.write(credentials.to_json())
-
-        return redirect('questionnaire_list')
-    except Exception as e:
-        print(f"Error during OAuth callback: {e}")
-        return HttpResponse("An error occurred during authentication.", status=500)
-
- 
-  
-@user_passes_test(lambda u: u.is_superuser, login_url='/accounts/login/')
-def add_questionnaire_view(request):
-    if request.method == 'POST':
-        questionnaire_form = QuestionnaireForm(request.POST)
-        answer_form = AnswerForm(request.POST)
-
-        if questionnaire_form.is_valid():
-            form_url = questionnaire_form.cleaned_data.get('edit_url')
-
-        if not os.path.exists(settings.GOOGLE_FORM_TOKEN_PATH):
-          return redirect('google_oauth')
-
-        form_data = get_form_data(form_url)
-        
-        if form_data:
-            questionnaire = questionnaire_form.save(commit=False)
-            questionnaire.title = form_data.get('title')
-            questionnaire.description = form_data.get('description')
-            questionnaire.edit_url = form_url
-            questionnaire.save()
-
-            if answer_form.is_valid():
-              # Populate answer form with the required data
-              answer = Answer.objects.get(questionnaire=questionnaire)
-              answer.questions = form_data.get('questions')
-              answer.save()
-
-        return redirect('questionnaire_list')      
-          
-    else:
-      questionnaire_form = QuestionnaireForm()
-      answer_form = AnswerForm()
-
-    return render(request, 'pages/add_questionnaire.html', {'questionnaire_form': questionnaire_form, 'answer_form': answer_form})
-
-def get_form_data(form_url):
-    try:
-        # Load credentials from the file
-        with open(settings.GOOGLE_FORM_TOKEN_PATH, 'r') as token_file:
-            token_info = json.load(token_file)
-            creds = Credentials.from_authorized_user_info(token_info)
-
-        # Refresh the credentials if they are expired
-        if creds.expired:
-            creds.refresh(Request())
-            with open(settings.GOOGLE_FORM_TOKEN_PATH, 'w') as token_file:
-                token_file.write(creds.to_json())
-
-    except FileNotFoundError:
-        print("No credentials found. Need to authenticate first.")
-        return None
-    except KeyError:
-        print("Error loading credentials. File format may be incorrect.")
-        return None
-
-    # Create a Google Forms service client using the credentials
-    service = build('forms', 'v1', credentials=creds)
-
-    try:
-        # Extract the form ID from the URL and use it to fetch the form data
-        form_id = form_url.split("/")[-2]
-        form = service.forms().get(formId=form_id).execute()
-        
-        questions = {}
-        for item in form.get('items', []):
-            title = item.get('title')
-            question_id = item.get('questionItem', {}).get('question', {}).get('questionId')
-
-            if title and question_id:
-                questions[question_id] = title
-        
-        return {
-            'title': form.get('info', {}).get('title'),
-            'description': form.get('info', {}).get('description'),
-            'questions': questions
-        }
-
-    except Exception as e:
-        print(f"Error retrieving form data: {e}")
-        return None
-
-
-@user_passes_test(lambda u: u.is_superuser, login_url='/accounts/login/')       
-def update_response_view(request):
-
-    if not os.path.exists(settings.GOOGLE_FORM_TOKEN_PATH):
-          return redirect('google_oauth')
-        
-    form_id = request.GET.get('form_id', '')
-    if not form_id:
-        # Handle the case where form_id is not provided
-        return redirect('pages/questionnaire_list.html')
-      
-    try:
-      # Load credentials from the file
-      with open(settings.GOOGLE_FORM_TOKEN_PATH, 'r') as token_file:
-          token_info = json.load(token_file)
-          creds = Credentials.from_authorized_user_info(token_info)
-
-      # Refresh the credentials if they are expired
-      if creds.expired:
-          creds.refresh(Request())
-          with open(settings.GOOGLE_FORM_TOKEN_PATH, 'w') as token_file:
-              token_file.write(creds.to_json())
-
-    except FileNotFoundError:
-      print("No credentials found. Need to authenticate first.")
-      return redirect('pages/questionnaire_list.html')
-    
-    except KeyError:
-      print("Error loading credentials. File format may be incorrect.")
-      return redirect('pages/questionnaire_list.html')
-
-    # Create a Google Forms service client using the credentials
-    service = build('forms', 'v1', credentials=creds)
-    
-    try:
-      # Extract the form ID from the URL and use it to fetch the form data
-      responses = service.forms().responses().list(formId=form_id).execute()
-      questionnaire = Questionnaire.objects.get(edit_url__contains=form_id)
-      answer = Answer.objects.get(questionnaire=questionnaire)
-      processed_responses = process_form_responses(questionnaire.id, responses)
-      answer.response_data = processed_responses
-      answer.save()  
-
-    except Exception as e:
-        print(f"Error retrieving form data: {e}")
-        return redirect('questionnaire_list')
-
-    return redirect(reverse('answer_list', kwargs={'pk': questionnaire.pk}))
-
- 
-def process_form_responses(questionnaire_id, responses):
-    # Retrieve all user_hashes and their corresponding usernames from the User model
-    user_hash_to_username = {user_hash: username for username, user_hash in User.objects.values_list('username', 'user_hash')}
-
-    # Retrieve the Questionnaire and its related Answer object
-    answer = Answer.objects.get(questionnaire_id=questionnaire_id)
-
-    # Find the question ID for the username question
-    username_question_id = next((key for key, value in answer.questions.items() if value.lower() == "username"), None)
-
-    if not username_question_id:
-        print("Username question ID not found.")
-        return []
-
-    processed_responses = []
-
-    # Process each response
-    for response in responses.get('responses', []):
-        response_data = response.get('answers', {})
-        user_hash_response = response_data.get(username_question_id, {}).get('textAnswers', {}).get('answers', [{}])[0].get('value', '')
-
-        if user_hash_response in user_hash_to_username:
-            username = user_hash_to_username[user_hash_response]
-
-            processed_response = {}
-            for question_id, title in answer.questions.items():
-                # Handle file upload answers separately
-                if 'fileUploadAnswers' in response_data.get(question_id, {}):
-                    file_id = response_data[question_id]['fileUploadAnswers']['answers'][0]['fileId']
-                    file_url = f"https://drive.google.com/open?id={file_id}"
-                    processed_response[title] = file_url
-                else:
-                    # Handle other types of answers
-                    question_response = response_data.get(question_id, {}).get('textAnswers', {}).get('answers', [{}])[0].get('value', '')
-                    if title.lower() == 'username':
-                        processed_response[title] = username
-                    else:
-                        processed_response[title] = question_response
-            processed_responses.append(processed_response)
-
-    return processed_responses
-
-
-
-@login_required(login_url='/accounts/login/')
-def questionnaire_list_view(request):
-    questionnaires = Questionnaire.objects.all()
-    context = {
-    'segment': '進行中的問卷',
-    'questionnaires': questionnaires
-    }
-    
-    return render(request, 'pages/questionnaire_list.html', context)
-
-@login_required(login_url='/accounts/login/')
-def edit_questionnaire_view(request, pk):
-    questionnaire = get_object_or_404(Questionnaire, pk=pk)
-
-    if request.method == 'POST':
-        form = QuestionnaireForm(request.POST, instance=questionnaire)
-        if form.is_valid():
-            # Save Questionnaire without nested objects
-            questionnaire = form.save(commit=False)
-            question_formset = form.cleaned_data['question_formset']
-            # Delete flagged questions
-            for form in question_formset:
-                if form.cleaned_data['is_deleted']:
-                    form.instance.delete()
-            # Save remaining questions
-            question_formset.save()
-            form.save()
-            messages.success(request, "Questionnaire updated successfully!")
-            return redirect('questionnaire_list')
-    else:
-        form = QuestionnaireForm(instance=questionnaire)
-
-    context = {'form': form}
-    return render(request, 'pages/edit_questionnaire.html', context)
-
-def delete_questionnaire_view(request, pk):
-    questionnaire = get_object_or_404(Questionnaire, pk=pk)
-
-    if request.method == 'POST':
-        questionnaire.delete()
-        # Redirect to the questionnaire list or any other page after deletion
-        return redirect('questionnaire_list')
-
-    return render(request, 'pages/delete_questionnaire_confirm.html', {'questionnaire': questionnaire})
-
-@user_passes_test(lambda u: u.is_superuser, login_url='/accounts/login/')
-def answer_list_view(request, pk):
-    questionnaire = get_object_or_404(Questionnaire, pk=pk)
-    answers = Answer.objects.filter(questionnaire=questionnaire)
-    return render(request, 'pages/answer_list.html', {'answers': answers, 'questionnaire': questionnaire})
-
-  
-@login_required(login_url='/accounts/login/')
-def answer_history(request, pk, username):
-    viewed_user = get_object_or_404(User, username=username)
-    questionnaire = get_object_or_404(Questionnaire, pk=pk)
-
-    try:
-        answer = Answer.objects.get(questionnaire=questionnaire)
-        # Filter the response_data to get only those responses where 'username' matches the viewed_user's username
-        filtered_responses = [response for response in answer.response_data if response.get('username') == viewed_user.username]
-    except Answer.DoesNotExist:
-        filtered_responses = []
-
-    return render(request, 'pages/answer_history.html', {'questionnaire': questionnaire, 'responses': filtered_responses, 'viewed_user': viewed_user})
-
-  
-# Authentication
+###Authentication###
 class UserRegistrationView(CreateView):
   template_name = 'accounts/auth-signup.html'
   form_class = RegistrationForm
@@ -404,7 +98,6 @@ def profile_page(request, username):
 
     return render(request, 'pages/profile.html', {'user': user, 'answers': answers})
 
-
 @login_required(login_url='/accounts/login/')
 def edit_profile(request, username):
     edit_user = get_object_or_404(User, username=username)  # Use a different variable name to avoid confusion
@@ -421,7 +114,271 @@ def edit_profile(request, username):
     context = {'form': form, 'edit_user': edit_user}  # Pass the specific user being edited
     return render(request, 'pages/profile_edit.html', context)
 
+###Google OAuth Flow###
+@user_passes_test(lambda u: u.is_superuser, login_url='/accounts/login/')  
+def redirect_to_google_oauth(request):
+    flow = Flow.from_client_secrets_file(
+        settings.GOOGLE_FORM_CLIENT_SECRETS_PATH,
+        scopes=[settings.SCOPES],
+        redirect_uri=request.build_absolute_uri('/oauth2callback/')
+    )
 
+    authorization_url, state = flow.authorization_url(
+        access_type='offline',
+        include_granted_scopes='true',
+        prompt='consent'
+    )
+    request.session['state'] = state
+
+    return redirect(authorization_url)
+  
+def oauth2callback(request):
+    state = request.session.get('state')
+
+
+    flow = Flow.from_client_secrets_file(
+        settings.GOOGLE_FORM_CLIENT_SECRETS_PATH,
+        scopes=settings.SCOPES,
+        state=state,
+        redirect_uri=request.build_absolute_uri('/oauth2callback/')
+    )
+
+    try:
+        flow.fetch_token(authorization_response=request.build_absolute_uri())
+
+        credentials = flow.credentials
+        with open(settings.GOOGLE_FORM_TOKEN_PATH, 'w') as token_file:
+            token_file.write(credentials.to_json())
+
+        return redirect('questionnaire_list')
+    except Exception as e:
+        print(f"Error during OAuth callback: {e}")
+        return HttpResponse("An error occurred during authentication.", status=500)
+
+ 
+ ###問卷相關###
+@user_passes_test(lambda u: u.is_superuser, login_url='/accounts/login/')
+def add_questionnaire_view(request):
+    if request.method == 'POST':
+        questionnaire_form = QuestionnaireForm(request.POST)
+        answer_form = AnswerForm(request.POST)
+
+        if questionnaire_form.is_valid():
+            form_url = questionnaire_form.cleaned_data.get('edit_url')
+
+        if not os.path.exists(settings.GOOGLE_FORM_TOKEN_PATH):
+          return redirect('google_oauth')
+
+        form_data = get_form_data(form_url)
+        
+        if form_data:
+            questionnaire = questionnaire_form.save(commit=False)
+            questionnaire.title = form_data.get('title')
+            questionnaire.description = form_data.get('description')
+            questionnaire.edit_url = form_url
+            questionnaire.save()
+
+            if answer_form.is_valid():
+              # Populate answer form with the required data
+              answer = Answer.objects.get(questionnaire=questionnaire)
+              answer.questions = form_data.get('questions')
+              answer.save()
+
+        return redirect('questionnaire_list')      
+          
+    else:
+      questionnaire_form = QuestionnaireForm()
+      answer_form = AnswerForm()
+
+    context = {'questionnaire_form': questionnaire_form, 'answer_form': answer_form, 'segment': '新增問卷'}
+    return render(request, 'pages/add_questionnaire.html', context)
+
+def get_form_data(form_url):
+    try:
+        # Load credentials from the file
+        with open(settings.GOOGLE_FORM_TOKEN_PATH, 'r') as token_file:
+            token_info = json.load(token_file)
+            creds = Credentials.from_authorized_user_info(token_info)
+
+        # Refresh the credentials if they are expired
+        if creds.expired:
+            creds.refresh(Request())
+            with open(settings.GOOGLE_FORM_TOKEN_PATH, 'w') as token_file:
+                token_file.write(creds.to_json())
+
+    except FileNotFoundError:
+        print("No credentials found. Need to authenticate first.")
+        return None
+    except KeyError:
+        print("Error loading credentials. File format may be incorrect.")
+        return None
+
+    service = build('forms', 'v1', credentials=creds)
+
+    try:
+        # Extract the form ID from the URL and use it to fetch the form data
+        form_id = form_url.split("/")[-2]
+        form = service.forms().get(formId=form_id).execute()
+        
+        questions = {}
+        for item in form.get('items', []):
+            title = item.get('title')
+            question_id = item.get('questionItem', {}).get('question', {}).get('questionId')
+
+            if title and question_id:
+                questions[question_id] = title
+        
+        return {
+            'title': form.get('info', {}).get('title'),
+            'description': form.get('info', {}).get('description'),
+            'questions': questions
+        }
+
+    except Exception as e:
+        print(f"Error retrieving form data: {e}")
+        return None
+
+
+@user_passes_test(lambda u: u.is_superuser, login_url='/accounts/login/')       
+def update_response_view(request):
+
+    if not os.path.exists(settings.GOOGLE_FORM_TOKEN_PATH):
+          return redirect('google_oauth')
+        
+    form_id = request.GET.get('form_id', '')
+    if not form_id:
+        return redirect('pages/questionnaire_list.html')
+      
+    try:
+      with open(settings.GOOGLE_FORM_TOKEN_PATH, 'r') as token_file:
+          token_info = json.load(token_file)
+          creds = Credentials.from_authorized_user_info(token_info)
+
+      if creds.expired:
+          creds.refresh(Request())
+          with open(settings.GOOGLE_FORM_TOKEN_PATH, 'w') as token_file:
+              token_file.write(creds.to_json())
+
+    except FileNotFoundError:
+      print("No credentials found. Need to authenticate first.")
+      return redirect('pages/questionnaire_list.html')
+    
+    except KeyError:
+      print("Error loading credentials. File format may be incorrect.")
+      return redirect('pages/questionnaire_list.html')
+
+    service = build('forms', 'v1', credentials=creds)
+    
+    try:
+      # Extract the form ID from the URL and use it to fetch the form data
+      responses = service.forms().responses().list(formId=form_id).execute()
+      questionnaire = Questionnaire.objects.get(edit_url__contains=form_id)
+      answer = Answer.objects.get(questionnaire=questionnaire)
+      processed_responses = process_form_responses(questionnaire.id, responses)
+      answer.response_data = processed_responses
+      answer.save()  
+
+    except Exception as e:
+        print(f"Error retrieving form data: {e}")
+        return redirect('questionnaire_list')
+
+    return redirect(reverse('answer_list', kwargs={'pk': questionnaire.pk}))
+
+
+def process_form_responses(questionnaire_id, responses):
+    # Retrieve all user_hashes and their corresponding usernames from the User model
+    user_hash_to_username = {user_hash: username for username, user_hash in User.objects.values_list('username', 'user_hash')}
+
+    answer = Answer.objects.get(questionnaire_id=questionnaire_id)
+    username_question_id = next((key for key, value in answer.questions.items() if value.lower() == "username"), None)
+
+    if not username_question_id:
+        print("Username question ID not found.")
+        return []
+
+    processed_responses = []
+    for response in responses.get('responses', []):
+        response_data = response.get('answers', {})
+        last_submitted_time = response.get('lastSubmittedTime', '')
+
+        # Convert last submitted time to a more readable format
+        if last_submitted_time:
+            try:
+                readable_time = datetime.fromisoformat(last_submitted_time.rstrip('Z')).replace(tzinfo=pytz.UTC).astimezone(pytz.timezone("Asia/Taipei")).strftime('%Y-%m-%d %H:%M:%S')
+            except ValueError:
+                readable_time = "Invalid Time Format"
+        else:
+            readable_time = "Not Available"
+
+        user_hash_response = response_data.get(username_question_id, {}).get('textAnswers', {}).get('answers', [{}])[0].get('value', '')
+
+        if user_hash_response in user_hash_to_username:
+            username = user_hash_to_username[user_hash_response]
+
+            processed_response = {'上傳時間': readable_time}  # Adding the formatted last submitted time
+            for question_id, title in answer.questions.items():
+                if 'fileUploadAnswers' in response_data.get(question_id, {}):
+                    file_id = response_data[question_id]['fileUploadAnswers']['answers'][0]['fileId']
+                    file_url = f"https://drive.google.com/open?id={file_id}"
+                    processed_response[title] = file_url
+                else:
+                    question_response = response_data.get(question_id, {}).get('textAnswers', {}).get('answers', [{}])[0].get('value', '')
+                    if title.lower() == 'username':
+                        processed_response[title] = username
+                    else:
+                        processed_response[title] = question_response
+            processed_responses.append(processed_response)
+
+    processed_responses.sort(key=lambda x: x['上傳時間'], reverse=True)
+
+    return processed_responses
+
+
+
+
+@login_required(login_url='/accounts/login/')
+def questionnaire_list_view(request):
+    questionnaires = Questionnaire.objects.all()
+    context = {
+    'segment': '進行中的問卷',
+    'questionnaires': questionnaires
+    }
+    
+    return render(request, 'pages/questionnaire_list.html', context)
+
+
+def delete_questionnaire_view(request, pk):
+    questionnaire = get_object_or_404(Questionnaire, pk=pk)
+
+    if request.method == 'POST':
+        questionnaire.delete()
+        return redirect('questionnaire_list')
+
+    return render(request, 'pages/delete_questionnaire_confirm.html', {'questionnaire': questionnaire})
+
+@user_passes_test(lambda u: u.is_superuser, login_url='/accounts/login/')
+def answer_list_view(request, pk):
+    questionnaire = get_object_or_404(Questionnaire, pk=pk)
+    answers = Answer.objects.filter(questionnaire=questionnaire)
+    return render(request, 'pages/answer_list.html', {'answers': answers, 'questionnaire': questionnaire})
+
+
+@login_required(login_url='/accounts/login/')
+def answer_history(request, pk, username):
+    viewed_user = get_object_or_404(User, username=username)
+    questionnaire = get_object_or_404(Questionnaire, pk=pk)
+
+    try:
+        answer = Answer.objects.get(questionnaire=questionnaire)
+        filtered_responses = [response for response in answer.response_data if response.get('username') == viewed_user.username]
+    except Answer.DoesNotExist:
+        filtered_responses = []
+
+    return render(request, 'pages/answer_history.html', {'questionnaire': questionnaire, 'responses': filtered_responses, 'viewed_user': viewed_user})
+
+
+
+###長者紀錄相關###
 class ElderRecordUploadView(FormView):
   template_name='add_record.html'
   form_class = ElderRecordForm  
@@ -450,7 +407,6 @@ class ElderRecordViewView(LoginRequiredMixin, ListView):
   context_object_name = 'records'
   
   def get_queryset(self):
-    # Filter the records based on the current user's tagged elders
     return super().get_queryset().filter(taggedElder=self.request.user)
   
 class ElderListView(LoginRequiredMixin, ListView):
@@ -460,8 +416,7 @@ class ElderListView(LoginRequiredMixin, ListView):
     
     def get_queryset(self):
       manager_relationships = UserRelationship.objects.filter(managers=self.request.user)
-      
-      # Create an empty list to store all the elders managed by the user
+
       elders_managed = []
 
       for relationship in manager_relationships:
@@ -472,10 +427,9 @@ class ElderListView(LoginRequiredMixin, ListView):
 def elder_search_view(request):
     query = request.GET.get('username', '')
     if query:
-        # Filter your queryset based on the search query
         queryset = Elder.objects.filter(username__icontains=query)
     else:
-        queryset = Elder.objects.all()  # Or however you normally retrieve the data
+        queryset = Elder.objects.all()  
 
     context = {
         'relationship': queryset
@@ -503,22 +457,6 @@ class ElderRecordDetailView(DetailView):
             raise Http404("您沒有權限瀏覽此頁面！")
 
 ################################################################
-# Chart and Maps
-@login_required(login_url='/accounts/login/')
-def morris_chart(request):
-  context = {
-    'parent': 'chart',
-    'segment': 'morris_chart'
-  }
-  return render(request, 'pages/chart-morris.html', context)
-
-@login_required(login_url='/accounts/login/')
-def google_maps(request):
-  context = {
-    'parent': 'maps',
-    'segment': 'google_maps'
-  }
-  return render(request, 'pages/map-google.html', context)
 # Components
 @login_required(login_url='/accounts/login/')
 def bc_button(request):
@@ -576,33 +514,6 @@ def icon_feather(request):
   }
   return render(request, "pages/components/icon-feather.html", context)
 
-@csrf_exempt  # Disable CSRF for this view
-@require_http_methods(["POST"])  # Only allow POST requests
-def handle_google_form_response(request):
-    data = json.loads(request.body)  # Assuming data is sent as JSON
-
-    # Extract the username and questionnaire information
-    username = data.get('username')  # Replace 'username' with the actual key used in your JSON
-    questionnaire_id = data.get('questionnaire_id')  # Replace with the actual key
-
-    # Check if the user exists in the database
-    try:
-        user = User.objects.get(username=username)
-    except User.DoesNotExist:
-        # Handle the case where the user does not exist
-        return JsonResponse({'status': 'error', 'message': 'User not found'}, status=404)
-
-    # Check if the questionnaire exists
-    try:
-        questionnaire = Questionnaire.objects.get(id=questionnaire_id)
-    except Questionnaire.DoesNotExist:
-        # Handle the case where the questionnaire does not exist
-        return JsonResponse({'status': 'error', 'message': 'Questionnaire not found'}, status=404)
-
-    # Process the rest of the data and create/update the Answer object
-    # ...
-
-    return JsonResponse({'status': 'success'})
 
 
 
