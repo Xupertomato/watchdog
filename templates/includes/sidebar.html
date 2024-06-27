@@ -25,13 +25,7 @@
           <span class="pcoded-micon"><i class="feather icon-home"></i></span><span class="pcoded-mtext">Dashboard</span>
           </a>
         </li>
-        
-        <!-- {% if not request.user.is_authenticated %}
-        <li data-username="Visitor login" class="nav-item {% if 'form_elements' in segment %}active{% endif %}">
-          <a href="{% url 'login' %}" class="nav-link "><span class="pcoded-micon"><i
-                class="feather icon-file-text"></i></span><span class="pcoded-mtext">登入</span></a>
-        </li>
-        {% endif %} -->
+         
 
         {% admin_get_menu as app_list %}
         {% if app_list %}

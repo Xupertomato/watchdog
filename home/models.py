@@ -71,6 +71,9 @@ class User(AbstractUser):
     #使用者照片路徑
     upload_profile = models.FileField(upload_to=upload_profile, null=True, blank=True, default=None, storage=OverwriteStorage())
     
+    nano_guid = models.CharField(max_length=36, null=True, default=None)
+    serial_number = models.CharField(max_length=36, null=True, default=None)
+    
     user_hash = models.CharField(max_length=64, blank=False, editable=False)
     def save(self, *args, **kwargs):  
         self.type = self.type

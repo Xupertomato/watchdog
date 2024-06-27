@@ -19,12 +19,12 @@ class RegistrationForm(UserCreationForm):
       widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': '請再次輸入密碼'}),
         )     
     type = forms.ChoiceField(
-        choices=[(choice[0], choice[1]) for choice in User.Types.choices],
+        choices = [(choice[0], choice[1]) for choice in User.Types.choices if choice[0] != "ELDER"],
         widget=forms.Select(attrs={'class': 'form-control', 'placeholder': '身份'}),
         )
     class Meta:
         model = User
-        fields = ('username', 'name', 'email', 'sex', 'type', 'phone_num', 'birthday', 'address', 'upload_profile')
+        fields = ('username', "name", "sex", "phone_num", "birthday", "address", "nano_guid", "serial_number",'upload_profile')
             
         widgets = {
             'username': forms.TextInput(attrs={
@@ -56,6 +56,14 @@ class RegistrationForm(UserCreationForm):
                 'class': 'form-control',
                 'placeholder': '出生日期'
             }),
+            'nano_guid': forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Nano GUID'
+            }),
+            'serial_number': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': '序列號碼'
+            }), 
             'address': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': '地址'
@@ -84,7 +92,7 @@ class ElderRegistrationForm(UserCreationForm):
     )      
     class Meta:
         model = Elder
-        fields = ('username', "name", "sex", "phone_num", "birthday", "address", 'upload_profile', "related_users")
+        fields = ('username', "name", "sex", "phone_num", "birthday", "address", "nano_guid", "serial_number",'upload_profile', "related_users")
         
         widgets = {
         'username': forms.TextInput(attrs={
@@ -107,6 +115,14 @@ class ElderRegistrationForm(UserCreationForm):
             'type': 'date',
             'class': 'form-control',
             'placeholder': '出生日期'
+        }),
+        'nano_guid': forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Nano GUID'
+        }),
+        'serial_number': forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': '序列號碼'
         }),
         'address': forms.TextInput(attrs={
             'class': 'form-control',
@@ -156,7 +172,7 @@ class UserPasswordChangeForm(PasswordChangeForm):
 class UserUpdateForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['name', 'email', 'sex', 'phone_num', 'birthday', 'address', "upload_profile"]
+        fields = ['name', 'email', 'sex', 'phone_num', 'birthday', "nano_guid", "serial_number", 'address', "upload_profile"]
         widgets = {
         'name': forms.TextInput(attrs={
             'class': 'form-control',
@@ -177,6 +193,14 @@ class UserUpdateForm(forms.ModelForm):
         'birthday': forms.DateInput(format=('%Y-%m-%d'),attrs={
             'type': 'date',
             'class': 'form-control'
+        }),
+        'nano_guid': forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Nano GUID'
+        }),
+        'serial_number': forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': '序列號碼'
         }),
         'address': forms.TextInput(attrs={
             'class': 'form-control',
